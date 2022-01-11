@@ -18,7 +18,11 @@ protected:
 public:
     typedef unsigned char  Reg8;
     typedef unsigned short Reg16;
+    #if defined(__armv8_h)
+    typedef unsigned int  Reg32;
+    #else
     typedef unsigned long  Reg32;
+    #endif
     typedef unsigned long long Reg64;
     typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, Reg16, CASE<32, Reg32, CASE<64, Reg64>>>>::Result Reg;
 
