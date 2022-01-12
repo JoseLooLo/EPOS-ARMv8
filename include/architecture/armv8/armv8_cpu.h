@@ -211,6 +211,10 @@ public:
     static void isb() { ASM("isb"); }
 
     static void svc() { ASM("svc 0x0"); }
+
+    static void vbar_el1(Reg r) {
+        ASM("msr vbar_el1, %0" : : "r"(r) : );
+    }
 };
 
 class ARMv8_A: public ARMv8
@@ -278,6 +282,20 @@ public:
         SMP          = 1 << 6 // SMP bit
     };
 
+    // EL
+    enum {
+        EL0 = 0,
+        EL1 = 1,
+        EL2 = 2,
+        EL3 = 3
+    };
+
+    // HCR_EL2
+    enum {
+        HCR_EL2_RW = 1 << 31,
+        HCR_EL2_SWIO = 1 << 1
+    };
+
     // CPU Context
     class Context: public ARMv8::Context
     {
@@ -293,8 +311,20 @@ public:
     static Flags flags() { return cpsr(); }
     static void flags(Flags flags) { cpsr(flags); }
 
+    //DONE
     static unsigned int id() {
-        return 0;
+        Reg id;
+        ASM("mrs %0, mpidr_el1" : "=r"(id) : : );
+        return id & 0x3;
+    }
+
+    //DONE
+    static unsigned int el() {
+        Reg el;
+        ASM("mrs %0, CurrentEL" : "=r"(el) : : );
+        ASM("and %0, %0, #12" : "=r"(el) : : );
+        ASM("lsr %0, %0, #2" : "=r"(el) : : );
+        return el;
     }
 
     static unsigned int cores() {

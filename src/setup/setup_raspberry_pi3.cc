@@ -12,6 +12,7 @@ extern "C" {
     // SETUP entry point is the Vector Table and resides in the .init section (not in .text), so it will be linked first and will be the first function after the ELF header in the image.
     #if defined(__armv8_h)
     void _entry() __attribute__ ((used, section(".init")));
+    void _vector_table() __attribute__ ((used));
     void _reset(); // so it can be safely reached from the vector table
     #else
     void _entry() __attribute__ ((used, naked, section(".init")));
@@ -894,24 +895,9 @@ using namespace EPOS::S;
 void _entry()
 {
     #if defined(__armv8_h)
-    ASM("_entry:                                                                \t\n\
-                        b _reset                                                \t\n\
-                        b _entry                                                \t\n\
-                        b _entry                                                \t\n\
-                        b _entry                                                \t\n\
-                        b _entry                                                \t\n\
-                        nop             // _reserved                            \t\n\
-                        b _entry                                                \t\n\
-                        b _entry                                                \t\n\
-                                                                                \t\n\
-                        .balign 32                                              \t\n\
-        reset:          .word _reset                                            \t\n\
-        ui:             .word 0x0                                               \t\n\
-        si:             .word 0x0                                               \t\n\
-        pa:             .word 0x0                                               \t\n\
-        da:             .word 0x0                                               \t\n\
-        irq:            .word 0x0                                               \t\n\
-        fiq:            .word 0x0                                               ");
+    //Define a temporary stack and jump to _reset
+    CPU::sp(Traits<Machine>::BOOT_STACK + Traits<Machine>::STACK_SIZE * CPU::id());
+    ASM("b _reset");
     #else
     // Interrupt Vector Table
     // We use and indirection table for the ldr instructions because the offset can be to far from the PC to be encoded
@@ -939,6 +925,27 @@ void _entry()
 void _reset()
 {
     #if defined(__armv8_h)
+    if (CPU::el() == CPU::EL2) {
+        //TODO: set sp_el1
+        ASM("mov x0, #(1 << 31) \n"
+            "orr x0, x0, #(1 << 1) \n"
+            "msr hcr_el2, x0 \n"
+            "mov x2, #0x3c4 \n"
+            "msr spsr_el2, x2 \n"
+            "adr x2, _entry \n"
+            "msr elr_el2, x2 \n"
+            "eret");
+    }
+
+    if(CPU::id() == 0) {
+        //TODO vbar_El1 - Incomplete
+        CPU::vbar_el1(reinterpret_cast<CPU::Reg>(&_vector_table));
+        _bss_clear();
+    }  else {
+        BCM_Mailbox * mbox = reinterpret_cast<BCM_Mailbox *>(Memory_Map::MBOX_CTRL_BASE);
+        mbox->eoi(0);
+        mbox->enable();
+    }
     #else
     // QEMU get us here in SVC mode with interrupt disabled, but the real Raspberry Pi3 starts in hypervisor mode, so we must switch to SVC mode
     if(!Traits<Machine>::SIMULATED) {
@@ -983,6 +990,8 @@ void _reset()
 
 void _setup()
 {
+    #if defined(__armv8_h)
+    #else
     CPU::int_disable(); // interrupts will be re-enabled at init_end
 
     CPU::enable_fpu();
@@ -990,6 +999,50 @@ void _setup()
     CPU::flush_branch_predictors();
     CPU::flush_tlb();
     CPU::actlr(CPU::actlr() | CPU::DCACHE_PREFE); // enable Dside prefetch
-    
+    #endif
     Setup setup;
 }
+
+#if defined(__armv8_h)
+void _vector_table() {
+    ASM(
+        "_vector_table: \n"
+        ".balign 0x80 \n"
+        "mov x0, x0 \n"
+        ".balign 0x80 \n"
+        "mov x1, x0 \n"
+        ".balign 0x80 \n"
+        "mov x2, x0 \n"
+        ".balign 0x80 \n"
+        "mov x3, x0 \n"
+
+        ".balign 0x80 \n"
+        "mov x4, x0 \n"
+        ".balign 0x80 \n"
+        "mov x5, x0 \n"
+        ".balign 0x80 \n"
+        "mov x6, x0 \n"
+        ".balign 0x80 \n"
+        "mov x7, x0 \n"
+
+        ".balign 0x80 \n"
+        "mov x8, x0 \n"
+        ".balign 0x80 \n"
+        "mov x9, x0 \n"
+        ".balign 0x80 \n"
+        "mov x10, x0 \n"
+        ".balign 0x80 \n"
+        "mov x11, x0 \n"
+
+        ".balign 0x80 \n"
+        "mov x12, x0 \n"
+        ".balign 0x80 \n"
+        "mov x13, x0 \n"
+        ".balign 0x80 \n"
+        "mov x14, x0 \n"
+        ".balign 0x80 \n"
+        "mov x15, x0 \n");
+}
+
+
+#endif
