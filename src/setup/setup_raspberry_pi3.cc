@@ -893,13 +893,53 @@ using namespace EPOS::S;
 
 void _entry()
 {
+    #if defined(__armv8_h)
+    ASM("_entry:                                                                \t\n\
+                        b _reset                                                \t\n\
+                        b _entry                                                \t\n\
+                        b _entry                                                \t\n\
+                        b _entry                                                \t\n\
+                        b _entry                                                \t\n\
+                        nop             // _reserved                            \t\n\
+                        b _entry                                                \t\n\
+                        b _entry                                                \t\n\
+                                                                                \t\n\
+                        .balign 32                                              \t\n\
+        reset:          .word _reset                                            \t\n\
+        ui:             .word 0x0                                               \t\n\
+        si:             .word 0x0                                               \t\n\
+        pa:             .word 0x0                                               \t\n\
+        da:             .word 0x0                                               \t\n\
+        irq:            .word 0x0                                               \t\n\
+        fiq:            .word 0x0                                               ");
+    #else
     // Interrupt Vector Table
     // We use and indirection table for the ldr instructions because the offset can be to far from the PC to be encoded
+        ASM("           ldr pc, reset                                           \t\n\
+                        ldr pc, ui                                              \t\n\
+                        ldr pc, si                                              \t\n\
+                        ldr pc, pa                                              \t\n\
+                        ldr pc, da                                              \t\n\
+                        nop             // _reserved                            \t\n\
+                        ldr pc, irq                                             \t\n\
+                        ldr pc, fiq                                             \t\n\
+                                                                                \t\n\
+                        .balign 32                                              \t\n\
+        reset:          .word _reset                                            \t\n\
+        ui:             .word 0x0                                               \t\n\
+        si:             .word 0x0                                               \t\n\
+        pa:             .word 0x0                                               \t\n\
+        da:             .word 0x0                                               \t\n\
+        irq:            .word 0x0                                               \t\n\
+        fiq:            .word 0x0                                               ");
+    #endif
 
 }
 
 void _reset()
 {
+    #if defined(__armv8_h)
+    #else
     // QEMU get us here in SVC mode with interrupt disabled, but the real Raspberry Pi3 starts in hypervisor mode, so we must switch to SVC mode
     if(!Traits<Machine>::SIMULATED) {
         CPU::Reg cpsr = CPU::cpsr();
@@ -936,6 +976,7 @@ void _reset()
         mbox->eoi(0);
         mbox->enable();
     }
+    #endif
 
     _setup();
 }
