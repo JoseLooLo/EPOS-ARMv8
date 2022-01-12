@@ -93,6 +93,15 @@ private:
     static void hard_fault(Interrupt_Id i);
 
     // Physical handler
+    #if defined(__armv8_h)
+    static void entry();
+    static void prefetch_abort();
+    static void undefined_instruction();
+    static void software_interrupt();
+    static void data_abort();
+    static void reserved();
+    static void fiq();
+    #else
     static void entry() __attribute__ ((naked));
     static void prefetch_abort() __attribute__ ((naked));
     static void undefined_instruction() __attribute__ ((naked));
@@ -100,6 +109,7 @@ private:
     static void data_abort() __attribute__ ((naked));
     static void reserved() __attribute__ ((naked));
     static void fiq() __attribute__ ((naked));
+    #endif
 
     static void kill();
 

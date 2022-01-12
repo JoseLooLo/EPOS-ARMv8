@@ -10,9 +10,15 @@ __BEGIN_SYS
 struct System_Info
 {
 private:
+    #if defined(__armv8_h)
+    typedef unsigned long LAddr;
+    typedef unsigned long PAddr;
+    typedef unsigned long Size;
+    #else
     typedef unsigned int LAddr;
     typedef unsigned int PAddr;
     typedef unsigned int Size;
+    #endif
 
 public:
     // The information we have at boot time (built by MKBI)

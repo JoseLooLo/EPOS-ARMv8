@@ -1,7 +1,7 @@
 // EPOS Machine Mediator Common Package Implementation
 
 #include <machine/machine.h>
-
+#if !defined(__armv8_h)
 extern "C" unsigned int __bss_start;    // defined by GCC
 extern "C" unsigned int _end;           // defined by GCC
 extern "C" void _bss_clear() __attribute__ ((alias("_ZN4EPOS1S14Machine_Common9clear_bssEv")));;
@@ -17,3 +17,4 @@ void Machine_Common::clear_bss()
 }
 
 __END_SYS
+#endif

@@ -181,26 +181,27 @@ public:
     static void init();
 
 private:
-    static void pmcr(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c12, 0\n\t" : : "r"(reg)); }
-    static Reg32 pmcr() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c12, 0\n\t" : "=r"(reg) : ); return reg; }
+    //TODO
+    static void pmcr(Reg32 reg) { }
+    static Reg32 pmcr() { return 0; }
 
-    static void pmcntenset(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c12, 1\n\t" : : "r"(reg)); }
-    static Reg32 pmcntenset() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c12, 1\n\t" : "=r"(reg) : ); return reg; }
+    static void pmcntenset(Reg32 reg) {}
+    static Reg32 pmcntenset() { return 0; }
 
-    static void pmcntenclr(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c12, 2\n\t" : : "r"(reg)); }
-    static Reg32 pmcntenclr() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c12, 2\n\t" : "=r"(reg) : ); return reg; }
+    static void pmcntenclr(Reg32 reg) {}
+    static Reg32 pmcntenclr() {return 0; }
 
-    static void pmovsr(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c12, 3\n\t" : : "r"(reg)); }
-    static Reg32 pmovsr() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c12, 3\n\t" : "=r"(reg) : ); return reg; }
+    static void pmovsr(Reg32 reg) {  }
+    static Reg32 pmovsr() { return 0; }
 
-    static void pmselr(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c12, 5\n\t" : : "r"(reg)); }
-    static Reg32 pmselr() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c12, 5\n\t" : "=r"(reg) : ); return reg; }
+    static void pmselr(Reg32 reg) {}
+    static Reg32 pmselr() { return 0; }
 
-    static void pmxevtyper(const Reg32 reg) { ASM("mcr p15, 0, %0, c9, c13, 1\n\t" : : "r"(reg)); }
-    static Reg32 pmxevtyper() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c13, 1\n\t" : "=r"(reg) : ); return reg; }
+    static void pmxevtyper(const Reg32 reg) { }
+    static Reg32 pmxevtyper() {  return 0; }
 
-    static void pmxevcntr(Reg32 reg) { ASM("mcr p15, 0, %0, c9, c13, 2\n\t" : : "r"(reg)); }
-    static Reg32 pmxevcntr() { Reg32 reg; ASM("mrc p15, 0, %0, c9, c13, 2\n\t" : "=r"(reg) : ); return reg; }
+    static void pmxevcntr(Reg32 reg) { }
+    static Reg32 pmxevcntr() { return 0; }
 
 private:
     static const Event _events[EVENTS];

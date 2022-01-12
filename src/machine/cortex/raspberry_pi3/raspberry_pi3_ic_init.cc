@@ -12,7 +12,7 @@ extern "C" { void _int_entry();
              void _prefetch_abort();
              void _data_abort();
              void _reserved();
-             void _fiq(); 
+             void _fiq();
 }
 
 // Class methods

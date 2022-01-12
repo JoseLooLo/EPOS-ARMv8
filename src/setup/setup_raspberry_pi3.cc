@@ -10,8 +10,13 @@ extern "C" {
     void _bss_clear();
 
     // SETUP entry point is the Vector Table and resides in the .init section (not in .text), so it will be linked first and will be the first function after the ELF header in the image.
+    #if defined(__armv8_h)
+    void _entry() __attribute__ ((used, section(".init")));
+    void _reset(); // so it can be safely reached from the vector table
+    #else
     void _entry() __attribute__ ((used, naked, section(".init")));
     void _reset() __attribute__ ((naked)); // so it can be safely reached from the vector table
+    #endif
     void _setup(); // just to create a Setup object
 
     // LD eliminates this variable while performing garbage collection, so --undefined=__boot_time_system_info must be present while linking
@@ -692,8 +697,8 @@ void Setup::enable_paging()
     // MNG_DOMAIN for no page permission verification, CLI_DOMAIN otherwise
     CPU::dacr((Traits<System>::multitask) ? CPU::CLI_DOMAIN : CPU::MNG_DOMAIN); 
 
-    CPU::dsb();
-    CPU::isb();
+    //CPU::dsb();
+    //CPU::isb();
 
     // Clear TTBCR for the system to use ttbr0 instead of 1
     CPU::ttbcr(0);
@@ -704,7 +709,7 @@ void Setup::enable_paging()
     CPU::actlr(CPU::actlr() | CPU::SMP); // Set SMP bit
     CPU::sctlr((CPU::sctlr() | CPU::DCACHE | CPU::ICACHE | CPU::MMU_ENABLE) & ~(CPU::AFE));
 
-    CPU::dsb();
+    //CPU::dsb();
     CPU::isb();
 
     // MMU now enabled - Virtual address system now active
@@ -890,23 +895,7 @@ void _entry()
 {
     // Interrupt Vector Table
     // We use and indirection table for the ldr instructions because the offset can be to far from the PC to be encoded
-    ASM("               ldr pc, reset                                           \t\n\
-                        ldr pc, ui                                              \t\n\
-                        ldr pc, si                                              \t\n\
-                        ldr pc, pa                                              \t\n\
-                        ldr pc, da                                              \t\n\
-                        nop             // _reserved                            \t\n\
-                        ldr pc, irq                                             \t\n\
-                        ldr pc, fiq                                             \t\n\
-                                                                                \t\n\
-                        .balign 32                                              \t\n\
-        reset:          .word _reset                                            \t\n\
-        ui:             .word 0x0                                               \t\n\
-        si:             .word 0x0                                               \t\n\
-        pa:             .word 0x0                                               \t\n\
-        da:             .word 0x0                                               \t\n\
-        irq:            .word 0x0                                               \t\n\
-        fiq:            .word 0x0                                               ");
+
 }
 
 void _reset()
