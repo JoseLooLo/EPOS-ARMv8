@@ -96,7 +96,7 @@ public:
     static Reg fr() { Reg r; ASM("mov %0, x0" : "=r"(r)); return r; }
     static void fr(Reg r) {  ASM("mov x0, %0" : : "r"(r) : "x0"); }
 
-    static Log_Addr ra() { Reg r; ASM("mov %0, x30" : "=r"(r) :); return r; } // due to RISC pipelining, PC is read with a +8 (4 for thumb) offset
+    static Log_Addr ra() { Reg r; ASM("mov %0, x30" : "=r"(r) :); return r; }
 
     static void halt() { ASM("wfi"); }
 
@@ -195,14 +195,14 @@ public:
 
     // ARMv8 specifics
     // TODO
-    static Reg r0() { return 0; }
-    static void r0(Reg r) {  }
+    // static Reg r0() { return 0; }
+    // static void r0(Reg r) {  }
 
-    static Reg r1() { return 0; }
-    static void r1(Reg r) {}
+    // static Reg r1() { return 0; }
+    // static void r1(Reg r) {}
 
-    static Reg sctlr() { return 0; }
-    static void sctlr(Reg r) { }
+    static Reg sctlr() { Reg r; ASM("mrs %0, sctlr_el1" : "=r"(r)); return r; }
+    static void sctlr(Reg r) { ASM("msr sctlr_el1, %0" : : "r"(r) :); }
 
     static Reg actlr() { return 0; }
     static void actlr(Reg r) { }
@@ -225,10 +225,12 @@ public:
     // CPU Flags
     typedef Reg Flags;
     enum {
-        FLAG_M          = 0x1f << 0,       // Processor Mode (5 bits)
-        FLAG_T          = 1    << 5,       // Thumb state
         FLAG_F          = 1    << 6,       // FIQ disable
         FLAG_I          = 1    << 7,       // IRQ disable
+
+        //TODO
+        FLAG_M          = 0x1f << 0,       // Processor Mode (5 bits)
+        FLAG_T          = 1    << 5,       // Thumb state
         FLAG_A          = 1    << 8,       // Imprecise Abort disable
         FLAG_E          = 1    << 9,       // Endianess (0 ->> little, 1 -> big)
         FLAG_GE         = 0xf  << 16,      // SIMD Greater than or Equal (4 bits)
@@ -273,7 +275,7 @@ public:
         DCACHE      = 1 << 2,  // Data cache enable
         BRANCH_PRED = 1 << 11, // Z bit, branch prediction enable
         ICACHE      = 1 << 12, // Instruction cache enable
-        AFE         = 1 << 29  // Access Flag enable
+        AFE         = 1 << 29  // Access Flag enable //TODO
     };
 
     // ACTLR bits
@@ -312,6 +314,10 @@ public:
     static void flags(Flags flags) { cpsr(flags); }
 
     //DONE
+    static Reg daif() { Reg r; ASM("mrs %0, daif" : "=r"(r)); return r; }
+    static void daif(Reg r) { ASM("msr daif, %0" : : "r"(r) :); }
+
+    //DONE
     static unsigned int id() {
         Reg id;
         ASM("mrs %0, mpidr_el1" : "=r"(id) : : );
@@ -328,12 +334,19 @@ public:
     }
 
     static unsigned int cores() {
-        return 0;
+        if(Traits<Build>::MODEL == Traits<Build>::Raspberry_Pi3) {
+            return Traits<Build>::CPUS;
+        } else {
+            //TODO
+            return 0;
+        }
     }
 
+    //DONE
     static void int_enable() {  flags(flags() & ~(FLAG_F | FLAG_I)); }
     static void int_disable() { flags(flags() | (FLAG_F | FLAG_I)); }
 
+    //DONE
     static bool int_enabled() { return !int_disabled(); }
     static bool int_disabled() { return flags() & (FLAG_F | FLAG_I); }
 
@@ -398,13 +411,14 @@ public:
     static void flush_branch_predictors() { }
 
     static void flush_caches() {
-        //TODO
     }
 
     static void enable_fpu() {
         //FPU is enabled by default but it will trigger a exception when you try to use fpu on EL1
         //This will disable this behavior, enabling the fpu on EL1
         //TODO
+        ASM("mov x1, #(0x3 << 20) \n"
+        "msr cpacr_el1, x1");
         //mov x1, #(0x3 << 20)
         //msr cpacr_el1, x1
     }
