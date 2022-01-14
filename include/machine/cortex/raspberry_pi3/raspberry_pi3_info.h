@@ -10,16 +10,9 @@ __BEGIN_SYS
 struct System_Info
 {
 private:
-    #if defined(__armv8_h)
-    typedef unsigned long LAddr;
-    typedef unsigned long PAddr;
-    typedef unsigned long Size;
-    #else
-    typedef unsigned int LAddr;
-    typedef unsigned int PAddr;
-    typedef unsigned int Size;
-    #endif
-
+    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result LAddr;
+    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result PAddr;
+    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result Size;
 public:
     // The information we have at boot time (built by MKBI)
     // Modifications to this map requires adjustments at MKBI and SETUP

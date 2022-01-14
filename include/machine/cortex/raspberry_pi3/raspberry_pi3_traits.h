@@ -34,7 +34,7 @@ public:
     // Physical Memory at Boot
     static const unsigned int BOOT              = NOT_USED;
     static const unsigned int BOOT_STACK        = 0x0007fffc;   // RAM_BASE + 512KB - 4 (will be used as the stack pointer, not the base)
-    static const unsigned int IMAGE             = 0x001000000;
+    static const unsigned int IMAGE             = 0x000800000;
     static const unsigned int RESET             = 0x000080000;
     static const unsigned int SETUP             = library_mode ? NOT_USED : RESET;
 
@@ -46,7 +46,7 @@ public:
     static const unsigned int APP_CODE          = library_mode ? RESET : APP_LOW;
     static const unsigned int APP_DATA          = APP_CODE + 4 * 1024 * 1024;
 
-    static const unsigned int INIT              = library_mode ? NOT_USED : 0x00080000;
+    static const unsigned int INIT              = library_mode ? NOT_USED : 0x00100000;
     static const unsigned int PHY_MEM           = 0x00000000;   // 0 (max 1792 MB)
     static const unsigned int IO                = 0x70000000;   // 2 GB - 256 MB (max 247 MB)
     static const unsigned int SYS               = 0xff700000;   // 4 GB - 9 MB

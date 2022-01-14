@@ -260,6 +260,19 @@ ARCH_WORD_SIZE		= $(call GETTK,WORD_SIZE,$(ARCH_TRAITS))
 ARCH_CLOCK		= $(call GETTK,CLOCK,$(ARCH_TRAITS))
 
 # Tools and flags to compile system tools
+ifeq ($(ARCH),armv8)
+TCC		:= gcc -ansi -c -Werror
+TCCFLAGS	:= -m64 -Wall -O -I$(INCLUDE)
+
+TCXX		:= g++ -c -ansi -fno-exceptions -std=c++14
+TCXXFLAGS	:= -m64 -Wall -O -I$(INCLUDE)
+
+TCPP		:= gcc -E
+TCPPFLAGS	:= -I$(INCLUDE)
+
+TLD		:= gcc
+TLDFLAGS	:= -m64
+else
 TCC		:= gcc -ansi -c -Werror
 TCCFLAGS	:= -m32 -Wall -O -I$(INCLUDE)
 
@@ -271,6 +284,7 @@ TCPPFLAGS	:= -I$(INCLUDE)
 
 TLD		:= gcc
 TLDFLAGS	:= -m32
+endif
 
 # Tools and flags to compile applications
 ACC		= $(BIN)/eposcc $(MACH_CC_FLAGS)  -c -ansi -O

@@ -130,21 +130,21 @@ Setup::Setup()
 
             // Build the memory model
             build_lm();
-            build_pmm();
+            // build_pmm();
 
-            // Print basic facts about this EPOS instance
-            say_hi();
+            // // Print basic facts about this EPOS instance
+            // say_hi();
 
-            // Configure the memory model defined above
-            setup_sys_pt();
-            setup_app_pt();
-            setup_sys_pd();
+            // // Configure the memory model defined above
+            // setup_sys_pt();
+            // setup_app_pt();
+            // setup_sys_pd();
 
-            // Enable paging
-            enable_paging();
+            // // Enable paging
+            // enable_paging();
 
-            // Load EPOS parts (e.g. INIT, SYSTEM, APPLICATION)
-            load_parts();
+            // // Load EPOS parts (e.g. INIT, SYSTEM, APPLICATION)
+            // load_parts();
 
         } else { // library mode
 
@@ -302,6 +302,7 @@ void Setup::build_lm()
             panic();
         }
 
+        //TODO
         if(si->lm.sys_data != SYS_DATA) {
             db<Setup>(ERR) << "OS data segment address (" << reinterpret_cast<void *>(si->lm.sys_data) << ") does not match the machine's memory map (" << reinterpret_cast<void *>(SYS_DATA) << ")!" << endl;
             panic();
