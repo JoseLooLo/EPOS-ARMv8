@@ -8,7 +8,7 @@
 
 __BEGIN_SYS
 
-class ARMv8_MMU: public MMU_Common<12, 8, 12>
+class ARMv8_MMU: public MMU_Common<13, 13, 16>
 {
     friend class CPU;
     friend class Setup;
@@ -30,63 +30,81 @@ public:
     public:
         // Page Table entry flags
         enum {
-            XN   = 1 << 0,  // not executable
-            PTE  = 1 << 1,  // sets entry as Small Page == Page Table Entry
-            // Access Permission bits, assuming SCTLR.AFE = 0
-            AP0  = 1 << 4,  
-            AP1  = 1 << 5,
-            AP2  = 1 << 9,
-            RW   = AP0,     // Read Write SYS
-            RO   = AP2,     // Read only SYS
-            USR  = (AP1 | AP0),
-            // TEX[2:0], C, B, S --> set Shareability/Cacheability
-            B    = 1 << 2,  // Bufferable
-            C    = 1 << 3,  // Cacheable
-            TEX0 = 1 << 6,
-            TEX1 = 1 << 7,
-            TEX2 = 1 << 8,
-            S    = 1 << 10, // Shareable
-            nG   = 1 << 11, // Not Global
-
-            SDEV = B,       // Shareable Device Memory, should not be used along with CT or CWT
-            CD   = TEX2,    // Cache Disable
-            CWT  = (TEX2 | TEX1 | TEX0 | C | B),  // Cacheable Write Through
-
-            // Page Table flags
-            APP  = (nG | S | AP1 | AP0 | CWT | PTE),        // S, RWX  All, Normal WT
-            APPD = (nG | S | AP1 | AP0 | CWT | XN  | PTE),  // S, RWnX All, Normal WT
-            APPC = (nG | S | AP2 | AP1 | AP0 | CWT | PTE),  // S, RnWX All, Normal WT
-            SYS  = (nG | S | AP0 | CWT | PTE),              // S, RWX  SYS, Normal WT
-            IO   = (nG | AP0 | SDEV | PTE),                 // Device Memory = Shareable, RWX, SYS
-            DMA  = (nG | AP0 | SDEV | PTE),                 // Device Memory no cacheable / Old Peripheral = Shareable, RWX, B ?
-            PT_MASK = (1 << 12) - 1
+            PRESENT     = 1l << 0,
+            VALID       = 1l << 1,
+            PTE_FLAGS   = (PRESENT | VALID),
+            PT_NS       = 1l << 5,
+            PT_RO_USR   = 3l << 6,              //Read only (User and kernel)
+            PT_RO_KER   = 2l << 6,              //Read only (Only kernel)
+            PT_RW_USR   = 1l << 6,              //ReadWrite (User and kernel)
+            PT_RW_KER   = 0l << 6,              //ReadWrite (Only kernel)
+            PT_RW       = 0l << 7,              //ReadWrite
+            PT_RO       = 1l << 7,              //ReadOnly
+            PT_USER     = 1l << 6,              //User only
+            PT_KERNEL   = 0l << 6,              //Kernel only
+            PT_SH_NO    = 0l << 8,              //No Shareable
+            PT_SH_O     = 2l << 8,              //Outer Shareable
+            PT_SH_I     = 3l << 8,              //Inner Shareable
+            PT_AF       = 1l << 10,             //Acess flag
+            PT_NG       = 1l << 11,             //Non Global
+            PT_DBM      = 1l << 51,             //Dirty Bit
+            PT_CONT     = 1l << 52,             //Continguous
+            PT_PXN      = 1l << 53,             //Privileged execute-never
+            PT_UXN      = 1l << 54,             //Unprivileged execute-never
+            PT_EXN      = (PT_UXN | PT_PXN)     //execute-never
+        };
+        //Page Directory entry flags
+        enum {
+            PDE_FLAGS   = (PRESENT | VALID),
+            PD_PXN      = 1l << 59,             //Privileged execute-never
+            PD_UXN      = 1l << 60,             //Unprivileged execute-never
+            PD_RO_USR   = 3l << 61,             //Read only (User and kernel)
+            PD_RO_KER   = 2l << 61,             //Read only (Only kernel)
+            PD_RW_USR   = 1l << 61,             //ReadWrite (User and kernel)
+            PD_RW_KER   = 0l << 61,             //ReadWrite (Only kernel)
+            PD_NS       = 1l << 63,
         };
 
-        // Short-descriptor format | Page Directory entry flags
         enum {
-            PDE  = 1 << 0,         // Set descriptor as Page Directory entry
-            NS   = 1 << 3,         // NonSecure Memory Region
-            PD_FLAGS = (NS | PDE),
-            PD_MASK = (1 << 10) -1
+            //TODO
+            //PT_RW_USR to IO and DMA??
+            //PT_SH_I or PT_SH_O??
+
+            //Inner shareable, User access RW
+            APP  = (PT_NG | PT_SH_I | PT_RW_USR | PTE_FLAGS),
+            //Inner shareable, User access RW, Execution never (User and kernel)
+            APPD = (PT_NG | PT_SH_I | PT_RW_USR | PT_PXN | PT_UXN | PTE_FLAGS),
+            //Inner shareable, User access RO
+            APPC = (PT_NG | PT_SH_I | PT_RO_USR | PTE_FLAGS),
+            //Inner shareable, Kernel access RW
+            SYS  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
+            //No shareable, Kernel access RW
+            IO   = (PT_NG | PT_SH_NO | PT_RW_KER | PTE_FLAGS),
+            //No shareable, Kernel access RW
+            DMA  = (PT_NG | PT_SH_NO | PT_RW_USR | PTE_FLAGS),
+        };
+
+        enum {
+            PT_MASK = 0l,
+            PD_MASK = 0l,
         };
 
     public:
         Page_Flags() {}
-        Page_Flags(unsigned int f) : _flags(f) {}
-        Page_Flags(Flags f) : _flags(nG |
-                                    ((f & Flags::RW)  ? RW   : RO) |
-                                    ((f & Flags::USR) ? USR  : 0) |
-                                    ((f & Flags::CWT) ? CWT  : 0) |
-                                    ((f & Flags::CD)  ? CD   : 0) |
-                                    ((f & Flags::EX)  ? 0    : XN) |
-                                    ((f & Flags::IO)  ? SDEV : S) ) {}
+        Page_Flags(unsigned long f) : _flags(f) {}
+        Page_Flags(Flags f) : _flags(PT_NG |
+                                    ((f & Flags::RW)  ? PT_RW   : PT_RO) |
+                                    ((f & Flags::USR) ? PT_USER  : PT_KERNEL) |
+                                    ((f & Flags::EX)  ? 0    : PT_EXN) |
+                                    ((f & Flags::CT)  ? PT_CONT    : 0) |
+                                    ((f & Flags::IO)  ? PT_SH_NO   : PT_SH_I) ) {}
 
         operator unsigned int() const { return _flags; }
 
         friend Debug & operator<<(Debug & db, const Page_Flags & f) { db << hex << f._flags; return db; }
 
     private:
-        unsigned int _flags;
+        unsigned long _flags;
     };
 
     // Page_Table
@@ -161,7 +179,7 @@ public:
 
         Chunk(unsigned int bytes, Flags flags, Color color = WHITE)
         : _from(0), _to(pages(bytes)), _pts(page_tables(_to - _from)), _flags(Page_Flags(flags)), _pt(calloc(_pts, WHITE)) {
-            if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD))) // CT == Strongly Ordered == C/B/TEX bits are 0
+            if(!((_flags & Page_Flags::PT_CONT))) //TODO
                 _pt->map_contiguous(_from, _to, _flags, color);
             else
                 _pt->map(_from, _to, _flags, color);
@@ -177,7 +195,7 @@ public:
 
         ~Chunk() {
             if(!(_flags & Page_Flags::IO)) {
-                if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD))) // CT == Strongly Ordered == C/B/TEX bits are 0
+                if(!((_flags & Page_Flags::PT_CONT))) //TODO
                     free((*_pt)[_from], _to - _from);
                 else
                     for( ; _from < _to; _from++)
@@ -192,12 +210,12 @@ public:
         unsigned int size() const { return (_to - _from) * sizeof(Page); }
 
         Phy_Addr phy_address() const {
-            return (!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD))) ? Phy_Addr(indexes((*_pt)[_from])) : Phy_Addr(false);
-            // CT == Strongly Ordered == C/B/TEX bits are 0
+            return (!((_flags & Page_Flags::PT_CONT))) ? Phy_Addr(indexes((*_pt)[_from])) : Phy_Addr(false);
+            //TODO
         }
 
         int resize(unsigned int amount) {
-            if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD))) // CT == Strongly Ordered == C/B/TEX bits are 0
+            if(!((_flags & Page_Flags::PT_CONT))) //TODO
                 return 0;
 
             unsigned int pgs = pages(amount);
@@ -249,7 +267,7 @@ public:
 
             for(unsigned int i = directory(PHY_MEM); i < directory(APP_LOW); i++)
                 (*_pd)[i] = (*_master)[i];
-            
+
             for(unsigned int i = directory(SYS); i < PD_ENTRIES; i++)
                 (*_pd)[i] = (*_master)[i];
         }
@@ -443,10 +461,10 @@ public:
         return pt->log()[page(addr)] | offset(addr);
     }
 
-    static PT_Entry phy2pte(Phy_Addr frame, Page_Flags flags) { return (frame) | flags | Page_Flags::PTE; }
+    static PT_Entry phy2pte(Phy_Addr frame, Page_Flags flags) { return (frame | flags | Page_Flags::PTE_FLAGS); }
     static Phy_Addr pte2phy(PT_Entry entry) { return (entry & ~Page_Flags::PT_MASK); }
-    static PD_Entry phy2pde(Phy_Addr frame) { return (frame) | Page_Flags::PD_FLAGS; }
-    static Phy_Addr pde2phy(PD_Entry entry) { return (entry & ~Page_Flags::PD_MASK); }
+    static PD_Entry phy2pde(Phy_Addr frame) { return (frame | Page_Flags::PDE_FLAGS); }
+    static Phy_Addr pde2phy(PD_Entry entry) { return (entry  & ~Page_Flags::PD_MASK); }
 
     static Log_Addr phy2log(Phy_Addr phy) { return Log_Addr((RAM_BASE == PHY_MEM) ? phy : (RAM_BASE > PHY_MEM) ? phy - (RAM_BASE - PHY_MEM) : phy + (PHY_MEM - RAM_BASE)); }
     static Phy_Addr log2phy(Log_Addr log) { return Phy_Addr((RAM_BASE == PHY_MEM) ? log : (RAM_BASE > PHY_MEM) ? log + (RAM_BASE - PHY_MEM) : log - (PHY_MEM - RAM_BASE)); }
