@@ -44,7 +44,7 @@ public:
     static const unsigned int APP_HIGH          = APP_LOW + (RAM_TOP - RAM_BASE) - 1;
 
     static const unsigned int APP_CODE          = library_mode ? RESET : APP_LOW;
-    static const unsigned int APP_DATA          = APP_CODE + 4 * 1024 * 1024;
+    static const unsigned int APP_DATA          = APP_CODE + 64 * 1024 * 1024;
 
     static const unsigned int INIT              = library_mode ? NOT_USED : 0x00100000;
     static const unsigned int PHY_MEM           = 0x00000000;   // 0 (max 1792 MB)
@@ -52,7 +52,7 @@ public:
     static const unsigned int SYS               = 0xff700000;   // 4 GB - 9 MB
 
     // Default Sizes and Quantities
-    static const unsigned int STACK_SIZE        = 16 * 1024;
+    static const unsigned int STACK_SIZE        = 64 * 1024;
     static const unsigned int MAX_THREADS       = 16;
     static const unsigned int HEAP_SIZE         = (MAX_THREADS + CPUS) * STACK_SIZE;
 

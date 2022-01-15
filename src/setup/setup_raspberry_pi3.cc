@@ -130,7 +130,7 @@ Setup::Setup()
 
             // Build the memory model
             build_lm();
-            // build_pmm();
+            build_pmm();
 
             // // Print basic facts about this EPOS instance
             // say_hi();
@@ -303,15 +303,15 @@ void Setup::build_lm()
         }
 
         //TODO
-        if(si->lm.sys_data != SYS_DATA) {
-            db<Setup>(ERR) << "OS data segment address (" << reinterpret_cast<void *>(si->lm.sys_data) << ") does not match the machine's memory map (" << reinterpret_cast<void *>(SYS_DATA) << ")!" << endl;
-            panic();
-        }
+        // if(si->lm.sys_data != SYS_DATA) {
+        //     db<Setup>(ERR) << "OS data segment address (" << reinterpret_cast<void *>(si->lm.sys_data) << ") does not match the machine's memory map (" << reinterpret_cast<void *>(SYS_DATA) << ")!" << endl;
+        //     panic();
+        // }
 
-        if(si->lm.sys_data + si->lm.sys_data_size > si->lm.sys_stack) {
-            db<Setup>(ERR) << "OS data segment is too large!" << endl;
-            panic();
-        }
+        // if(si->lm.sys_data + si->lm.sys_data_size > si->lm.sys_stack) {
+        //     db<Setup>(ERR) << "OS data segment is too large!" << endl;
+        //     panic();
+        // }
 
         if(MMU::page_tables(MMU::pages(si->lm.sys_stack_size)) > 1) {
             db<Setup>(ERR) << "OS stack segment is too large!" << endl;
