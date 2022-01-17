@@ -32,7 +32,6 @@ public:
         enum {
             PRESENT     = 1l << 0,
             VALID       = 1l << 1,
-            PTE_FLAGS   = (PRESENT | VALID),
             PT_NS       = 1l << 5,
             PT_RO_USR   = 3l << 6,              //Read only (User and kernel)
             PT_RO_KER   = 2l << 6,              //Read only (Only kernel)
@@ -51,7 +50,8 @@ public:
             PT_CONT     = 1l << 52,             //Continguous
             PT_PXN      = 1l << 53,             //Privileged execute-never
             PT_UXN      = 1l << 54,             //Unprivileged execute-never
-            PT_EXN      = (PT_UXN | PT_PXN)     //execute-never
+            PT_EXN      = (PT_UXN | PT_PXN),     //execute-never
+            PTE_FLAGS   = (PRESENT | VALID | PT_AF),
         };
         //Page Directory entry flags
         enum {
@@ -81,12 +81,12 @@ public:
             //No shareable, Kernel access RW
             IO   = (PT_NG | PT_SH_NO | PT_RW_KER | PTE_FLAGS),
             //No shareable, Kernel access RW
-            DMA  = (PT_NG | PT_SH_NO | PT_RW_USR | PTE_FLAGS),
+            DMA  = (PT_NG | PT_SH_NO | PT_RW_KER | PTE_FLAGS),
         };
 
         enum {
-            PT_MASK = 0l,
-            PD_MASK = 0l,
+            PT_MASK = (~(PAGE_SIZE - 1)),
+            PD_MASK = (~(DIRECTORY_SHIFT - 1)),
         };
 
     public:

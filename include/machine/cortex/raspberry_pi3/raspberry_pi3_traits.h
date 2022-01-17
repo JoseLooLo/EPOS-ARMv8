@@ -47,7 +47,7 @@ public:
     static const unsigned int APP_DATA          = APP_CODE + 64 * 1024 * 1024;
 
     static const unsigned int INIT              = library_mode ? NOT_USED : 0x00100000;
-    static const unsigned int PHY_MEM           = 0x00000000;   // 0 (max 1792 MB)
+    static const unsigned int PHY_MEM           = 0x40000000;   // 0 (max 1792 MB)
     static const unsigned int IO                = 0x70000000;   // 2 GB - 256 MB (max 247 MB)
     static const unsigned int SYS               = 0xff700000;   // 4 GB - 9 MB
 
