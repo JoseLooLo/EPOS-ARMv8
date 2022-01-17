@@ -144,7 +144,7 @@ Setup::Setup()
             enable_paging();
 
             // // Load EPOS parts (e.g. INIT, SYSTEM, APPLICATION)
-            // load_parts();
+            load_parts();
 
         } else { // library mode
 
@@ -529,30 +529,38 @@ void Setup::setup_sys_pt()
 
     // System Info
     sys_pt[MMU::directory(SYS_INFO - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_INFO)] = MMU::phy2pte(si->pmm.sys_info, Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_INFO - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_INFO) << "]=" << sys_pt[MMU::directory(SYS_INFO - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_INFO)] << ",addr="<< &sys_pt[MMU::directory(SYS_INFO - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_INFO)] << endl;
     db<Setup>(INF) << "SYS_INFO PT = " << MMU::directory(SYS_INFO - SYS) * (MMU::PT_ENTRIES-1) + MMU::page(SYS_INFO) << endl;
 
     // Set an entry to this page table, so the system can access it later -- 1 page
     sys_pt[MMU::directory(SYS_PT - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PT)]     = MMU::phy2pte(si->pmm.sys_pt, Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_PT - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PT) << "]=" << sys_pt[MMU::directory(SYS_PT - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PT)] << ",addr="<< &sys_pt[MMU::directory(SYS_PT - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PT)] << endl;
     db<Setup>(INF) << "SYS_PT PT = " << MMU::directory(SYS_PT - SYS) * (MMU::PT_ENTRIES-1) + MMU::page(SYS_PT) << endl;
 
     // System Page Directory -- 4 Pages for directory
     sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)]   = MMU::phy2pte(si->pmm.sys_pd, Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD) << "]=" << sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)] << ",addr="<< &sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)] << endl;
     sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+1] = MMU::phy2pte(si->pmm.sys_pd + sizeof(Page), Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+1 << "]=" << sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+1] << ",addr="<< &sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+1] << endl;
     sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+2] = MMU::phy2pte(si->pmm.sys_pd + 2 * sizeof(Page), Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+2 << "]=" << sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+2] << ",addr="<< &sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+2] << endl;
     sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+3] = MMU::phy2pte(si->pmm.sys_pd + 3 * sizeof(Page), Flags::SYS);
+    db<Setup>(INF) << "pts[" << MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+3 << "]=" << sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+3] << ",addr="<< &sys_pt[MMU::directory(SYS_PD - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_PD)+3] << endl;
 
     // SYSTEM code
     setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_CODE - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_CODE)]), si->pmm.sys_code, MMU::pages(si->lm.sys_code_size), MMU::page_tables(MMU::pages(si->lm.sys_code_size)), Flags::SYS, true);
     db<Setup>(INF) << "SYS_CODE PT = " << MMU::directory(SYS_CODE - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_CODE) << ",size=" << si->lm.sys_code_size << endl;
-    
+
     // SYSTEM data
-    setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA)]), si->pmm.sys_data, MMU::pages(si->lm.sys_data_size), MMU::page_tables(MMU::pages(si->lm.sys_data_size)), Flags::SYS, true);
+    //Não tem nenhum dado mas infelizmente o endereço é usado em algum lugar.
+    //Mapeia alguns endereços para não dar problemas
+    setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA)]), si->pmm.sys_data, MMU::pages(si->lm.sys_data_size + sizeof(Page)), MMU::page_tables(MMU::pages(si->lm.sys_data_size + sizeof(Page))), Flags::SYS, true);
     db<Setup>(INF) << "SYS_DATA PT = " << MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA) << ",size=" << si->lm.sys_data_size << endl;
 
     // SYSTEM stack (used only during init and for the ukernel model)
     setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_STACK - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_STACK)]), si->pmm.sys_stack, MMU::pages(si->lm.sys_stack_size), MMU::page_tables(MMU::pages(si->lm.sys_stack_size)), Flags::SYS, true);
     db<Setup>(INF) << "SYS_STACK PT = " << MMU::directory(SYS_STACK - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_STACK) << ",size=" << si->lm.sys_stack_size << endl;
-    
+
     db<Setup>(TRC) << "SYS_PT=" << *reinterpret_cast<Page_Table *>(sys_pt) << endl;
 }
 
@@ -621,7 +629,7 @@ void Setup::setup_sys_pd()
 
     db<Setup>(INF) << &pts[0] <<  " to "<< &pts[(n_pts-1) * sizeof(Page_Table) + MMU::PT_ENTRIES] << endl;
 
-    setup_pt(pts, si->bm.mem_base, mem_size, n_pts, Flags::SYS, true);
+    setup_pt(pts, si->bm.mem_base, mem_size, n_pts, Flags::SYS, false);
 
     db<Setup>(INF) << "PHY_MEM_PT("<< (void *) pts <<")=" << *reinterpret_cast<Page_Table *>(pts) << endl; // if this print is removed, the config goes wrong
     db<Setup>(INF) << "mem_size="<< mem_size <<",n_pts=" << n_pts << endl;
@@ -630,7 +638,7 @@ void Setup::setup_sys_pd()
     // Attach all physical memory starting at PHY_MEM
     if (PHY_MEM != RAM_BASE) {
         assert((MMU::directory(MMU::align_directory(PHY_MEM)) + n_pts) < (MMU::PD_ENTRIES - 3)); // check if it would overwrite the OS
-        for(unsigned int i = MMU::directory(MMU::align_directory(PHY_MEM)), j = 0; i < MMU::directory(MMU::align_directory(PHY_MEM)) + n_pts; i++, j++) {
+        for(unsigned int i = 0, j = 0; i < MMU::directory(MMU::align_directory(PHY_MEM)); i++, j++) {
             sys_pd[i] = MMU::phy2pde(si->pmm.phy_mem_pts + j * sizeof(Page_Table));
             db<Setup>(INF) << "pds[" << i << "]=" << sys_pd[i] << ",addr="<< &sys_pd[i] << endl;
         }
@@ -664,8 +672,11 @@ void Setup::setup_sys_pd()
 
     // Attach devices' memory at Memory_Map::IO
     assert((MMU::directory(MMU::align_directory(IO)) + n_pts) < (MMU::PD_ENTRIES - 1)); // check if it would overwrite the OS
-    for(unsigned int i = MMU::directory(MMU::align_directory(IO)), j = 0; i < MMU::directory(MMU::align_directory(IO)) + n_pts; i++, j++)
+    for(unsigned int i = MMU::directory(MMU::align_directory(IO)), j = 0; i < MMU::directory(MMU::align_directory(IO)) + n_pts; i++, j++) {
         sys_pd[i] = MMU::phy2pde((si->pmm.io_pts + j * sizeof(Page_Table)));
+        db<Setup>(INF) << "align= " << MMU::align_directory(IO) << endl;
+        db<Setup>(INF) << "pds[" << i << "]=" << sys_pd[i] << ",addr="<< &sys_pd[i] << endl;
+    }
     db<Setup>(INF) << "sys pd for io pts done" << endl;
 
     db<Setup>(INF) << "attach SYS pt on sys pd[sys]:" << MMU::directory(SYS) 
@@ -675,15 +686,20 @@ void Setup::setup_sys_pd()
     // Attach the OS (i.e. sys_pt)
     // One sys_pt for code
     sys_pd[MMU::directory(SYS)] = MMU::phy2pde(si->pmm.sys_pt);
+    db<Setup>(INF) << "pds[" << MMU::directory(SYS) << "]=" << sys_pd[MMU::directory(SYS)] << ",addr="<< &sys_pd[MMU::directory(SYS)] << endl;
     // Two sys_pt for data
     sys_pd[MMU::directory(SYS) + 1] = MMU::phy2pde(si->pmm.sys_pt + sizeof(Page_Table));
+    db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 1 << "]=" << sys_pd[MMU::directory(SYS) + 1] << ",addr="<< &sys_pd[MMU::directory(SYS) + 1] << endl;
     sys_pd[MMU::directory(SYS) + 2] = MMU::phy2pde(si->pmm.sys_pt + 2 * sizeof(Page_Table));
+    db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 2 << "]=" << sys_pd[MMU::directory(SYS) + 2] << ",addr="<< &sys_pd[MMU::directory(SYS) + 2] << endl;
     db<Setup>(INF) << "attach SYS on sys pd done" << endl;
 
     // Attach the first APPLICATION CODE (i.e. app_code_pt)
     n_pts = MMU::page_tables(MMU::pages(si->lm.app_code_size));
-    for(unsigned int i = MMU::directory(MMU::align_directory(si->lm.app_code)), j = 0; i < MMU::directory(MMU::align_directory(si->lm.app_code)) + n_pts; i++, j++)
+    for(unsigned int i = MMU::directory(MMU::align_directory(si->lm.app_code)), j = 0; i < MMU::directory(MMU::align_directory(si->lm.app_code)) + n_pts; i++, j++) {
         sys_pd[i] = MMU::phy2pde(si->pmm.app_code_pts + j * sizeof(Page_Table));
+        db<Setup>(INF) << "pds[" << i << "]=" << sys_pd[i] << ",addr="<< &sys_pd[i] << endl;
+    }
 
     // Attach the first APPLICATION DATA (i.e. app_data_pt, containing heap, stack and extra)
     n_pts = MMU::page_tables(MMU::pages(si->lm.app_data_size));
@@ -755,8 +771,8 @@ void Setup::load_parts()
     if(sizeof(System_Info) > sizeof(Page))
         db<Setup>(WRN) << "System_Info is bigger than a page (" << sizeof(System_Info) << ")!" << endl;
 
-    if(Traits<Setup>::hysterically_debugged)
-        db<Setup>(INF) << "Setup:SYS_INFO: " << MMU::Translation(SYS_INFO) << endl;
+    // if(Traits<Setup>::hysterically_debugged)
+    //     db<Setup>(INF) << "Setup:SYS_INFO: " << MMU::Translation(SYS_INFO) << endl;
     memcpy(reinterpret_cast<void *>(SYS_INFO), si, sizeof(System_Info));
     si = reinterpret_cast<System_Info *>(SYS_INFO);
 
@@ -764,11 +780,11 @@ void Setup::load_parts()
     if(si->lm.has_ini) {
         db<Setup>(TRC) << "Setup::load_init()" << endl;
         ELF * ini_elf = reinterpret_cast<ELF *>(&bi[si->bm.init_offset]);
-        if(Traits<Setup>::hysterically_debugged) {
-            db<Setup>(INF) << "Setup:ini_elf: " << MMU::Translation(ini_elf) << endl;
-            db<Setup>(INF) << "Setup:ini_elf[0]: " << MMU::Translation(ini_elf->segment_address(0)) << endl;
-            db<Setup>(INF) << "Setup:ini_elf[0].size: " << ini_elf->segment_size(0) << endl;
-        }
+        // if(Traits<Setup>::hysterically_debugged) {
+        //     db<Setup>(INF) << "Setup:ini_elf: " << MMU::Translation(ini_elf) << endl;
+        //     db<Setup>(INF) << "Setup:ini_elf[0]: " << MMU::Translation(ini_elf->segment_address(0)) << endl;
+        //     db<Setup>(INF) << "Setup:ini_elf[0].size: " << ini_elf->segment_size(0) << endl;
+        // }
         if(ini_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "INIT code segment was corrupted during SETUP!" << endl;
             panic();
@@ -784,33 +800,33 @@ void Setup::load_parts()
     if(si->lm.has_sys) {
         db<Setup>(TRC) << "Setup::load_os()" << endl;
         ELF * sys_elf = reinterpret_cast<ELF *>(&bi[si->bm.system_offset]);
-        if(Traits<Setup>::hysterically_debugged) {
-            db<Setup>(INF) << "Setup:sys_elf: " << MMU::Translation(sys_elf) << endl;
-            db<Setup>(INF) << "Setup:sys_elf[0]: " << MMU::Translation(sys_elf->segment_address(0)) << endl;
-            db<Setup>(INF) << "Setup:sys_elf[0].size: " << sys_elf->segment_size(0) << endl;
-        }
-        if(sys_elf->load_segment(0) < 0 || sys_elf->load_segment(1) < 0) {
+        // if(Traits<Setup>::hysterically_debugged) {
+        //     db<Setup>(INF) << "Setup:sys_elf: " << MMU::Translation(sys_elf) << endl;
+        //     db<Setup>(INF) << "Setup:sys_elf[0]: " << MMU::Translation(sys_elf->segment_address(0)) << endl;
+        //     db<Setup>(INF) << "Setup:sys_elf[0].size: " << sys_elf->segment_size(0) << endl;
+        // }
+        if(sys_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "OS code segment was corrupted during SETUP!" << endl;
             panic();
         }
-        for(int i = 2; i < sys_elf->segments(); i++) {
-            if(sys_elf->load_segment(i) < 0) {
-                db<Setup>(ERR) << "OS data segment was corrupted during SETUP!" << endl;
-                panic();
-            }
-        }
+        // for(int i = 1; i < sys_elf->segments(); i++) {
+        //     if(sys_elf->load_segment(i) < 0) {
+        //         db<Setup>(ERR) << "OS data segment was corrupted during SETUP!" << endl;
+        //         panic();
+        //     }
+        // }
     }
 
     // Load APP
     if(si->lm.has_app) {
         db<Setup>(TRC) << "Setup::load_app()" << endl;
         ELF * app_elf = reinterpret_cast<ELF *>(&bi[si->bm.application_offset]);
-        if(Traits<Setup>::hysterically_debugged) {
-            db<Setup>(INF) << "Setup:app_elf: " << (void*)app_elf << endl;
-            db<Setup>(INF) << "Setup:app_elf: " << MMU::Translation(app_elf) << endl;
-            db<Setup>(INF) << "Setup:app_elf[0]: " << MMU::Translation(app_elf->segment_address(0)) << endl;
-            db<Setup>(INF) << "Setup:app_elf[0].size: " << app_elf->segment_size(0) << endl;
-        }
+        // if(Traits<Setup>::hysterically_debugged) {
+        //     db<Setup>(INF) << "Setup:app_elf: " << (void*)app_elf << endl;
+        //     db<Setup>(INF) << "Setup:app_elf: " << MMU::Translation(app_elf) << endl;
+        //     db<Setup>(INF) << "Setup:app_elf[0]: " << MMU::Translation(app_elf->segment_address(0)) << endl;
+        //     db<Setup>(INF) << "Setup:app_elf[0].size: " << app_elf->segment_size(0) << endl;
+        // }
         if(app_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "Application code segment was corrupted during SETUP!" << endl;
             panic();
@@ -826,8 +842,8 @@ void Setup::load_parts()
     // Load EXTRA
     if(si->lm.has_ext) {
         db<Setup>(TRC) << "Setup::load_extra()" << endl;
-        if(Traits<Setup>::hysterically_debugged)
-            db<Setup>(INF) << "Setup:APP_EXTRA:" << MMU::Translation(si->lm.app_extra) << endl;
+        // if(Traits<Setup>::hysterically_debugged)
+        //     db<Setup>(INF) << "Setup:APP_EXTRA:" << MMU::Translation(si->lm.app_extra) << endl;
         memcpy(reinterpret_cast<void *>(si->lm.app_extra), &bi[si->bm.extras_offset], si->lm.app_extra_size);
     }
 }
