@@ -222,24 +222,24 @@ class ARMv8_A: public ARMv8
 public:
     static const bool thumb = false;
 
-    // CPU Flags
+
     typedef Reg Flags;
     enum {
+        // DAIF
         FLAG_F          = 1    << 6,       // FIQ disable
         FLAG_I          = 1    << 7,       // IRQ disable
+        FLAG_A          = 1    << 8,       // SError disable
+        FLAG_D          = 1    << 9,       // Debug disable
+        
+        FLAG_IL         = 1    << 20,
+        FLAG_SS         = 1    << 21,
 
-        //TODO
-        FLAG_M          = 0x1f << 0,       // Processor Mode (5 bits)
-        FLAG_T          = 1    << 5,       // Thumb state
-        FLAG_A          = 1    << 8,       // Imprecise Abort disable
-        FLAG_E          = 1    << 9,       // Endianess (0 ->> little, 1 -> big)
-        FLAG_GE         = 0xf  << 16,      // SIMD Greater than or Equal (4 bits)
-        FLAG_J          = 1    << 24,      // Jazelle state
-        FLAG_Q          = 1    << 27,      // Underflow and/or DSP saturation
-        FLAG_V          = 1    << 28,      // Overflow
-        FLAG_C          = 1    << 29,      // Carry
-        FLAG_Z          = 1    << 30,      // Zero
-        FLAG_N          = 1    << 31,      // Negative
+        // NZCV
+        FLAG_V          = 1    << 28,
+        FLAG_C          = 1    << 29,
+        FLAG_Z          = 1    << 30,
+        FLAG_N          = 1    << 31,
+
 
         // FLAG_M values
         MODE_USR        = 0x10,
@@ -250,6 +250,36 @@ public:
         MODE_UNDEFINED  = 0x1b,
         MODE_SYS        = 0x1f
     };
+
+
+    // // CPU Flags
+    // typedef Reg Flags;
+    // enum {
+    //     FLAG_F          = 1    << 6,       // FIQ disable
+    //     FLAG_I          = 1    << 7,       // IRQ disable
+
+    //     //TODO
+    //     FLAG_M          = 0x1f << 0,       // Processor Mode (5 bits)
+    //     FLAG_T          = 1    << 5,       // Thumb state
+    //     FLAG_A          = 1    << 8,       // Imprecise Abort disable
+    //     FLAG_E          = 1    << 9,       // Endianess (0 ->> little, 1 -> big)
+    //     FLAG_GE         = 0xf  << 16,      // SIMD Greater than or Equal (4 bits)
+    //     FLAG_J          = 1    << 24,      // Jazelle state
+    //     FLAG_Q          = 1    << 27,      // Underflow and/or DSP saturation
+    //     FLAG_V          = 1    << 28,      // Overflow
+    //     FLAG_C          = 1    << 29,      // Carry
+    //     FLAG_Z          = 1    << 30,      // Zero
+    //     FLAG_N          = 1    << 31,      // Negative
+
+    //     // FLAG_M values
+    //     MODE_USR        = 0x10,
+    //     MODE_FIQ        = 0x11,
+    //     MODE_IRQ        = 0x12,
+    //     MODE_SVC        = 0x13,
+    //     MODE_ABORT      = 0x17,
+    //     MODE_UNDEFINED  = 0x1b,
+    //     MODE_SYS        = 0x1f
+    // };
 
     // Exceptions
     typedef Reg Exception_Id;
@@ -310,12 +340,27 @@ protected:
     ARMv8_A() {};
 
 public:
+    // TODO
     static Flags flags() { return cpsr(); }
     static void flags(Flags flags) { cpsr(flags); }
 
     //DONE
     static Reg daif() { Reg r; ASM("mrs %0, daif" : "=r"(r)); return r; }
-    static void daif(Reg r) { ASM("msr daif, %0" : : "r"(r) :); }
+    static void daif(Reg r) { ASM("msr daif, %0" : : "r"(r) :);}
+
+    // DONE
+    static Reg nzcv() {Reg r; ASM("mrs %0, nzcv" : "=r"(r)); return r;}
+    static void nzcv(Reg r) { ASM("msr nzcv, %0" : : "r"(r) :);}
+
+    // DONE
+    static Reg elr_el1() {Reg r; ASM("mrs %0, elr_el1" : "=r"(r)); return r;}
+    static void elr_el1(Reg r) { ASM("msr elr_el1, %0" : : "r"(r) :);}
+
+    static Reg elr_el2() {Reg r; ASM("mrs %0, elr_el2" : "=r"(r)); return r;}
+    static void elr_el2(Reg r) { ASM("msr elr_el2, %0" : : "r"(r) :);}
+
+    static Reg elr_el3() {Reg r; ASM("mrs %0, elr_el3" : "=r"(r)); return r;}
+    static void elr_el3(Reg r) { ASM("msr elr_el3, %0" : : "r"(r) :);}
 
     //DONE
     static unsigned int id() {
@@ -356,6 +401,7 @@ public:
     static void fpu_restore() { }
 
     // ARMv8-A specifics
+    // TODO: REMOVE ARMV7 REGISTERS
     static Reg cpsr() { return 0; }
     static void cpsr(Reg r) {  }
 
