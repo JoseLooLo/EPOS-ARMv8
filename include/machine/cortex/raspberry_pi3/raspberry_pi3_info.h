@@ -10,9 +10,9 @@ __BEGIN_SYS
 struct System_Info
 {
 private:
-    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result LAddr;
-    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result PAddr;
-    typedef SWITCH<Traits<CPU>::WORD_SIZE, CASE<16, unsigned int, CASE<32, unsigned int, CASE<64, unsigned long long>>>>::Result Size;
+    typedef unsigned long long LAddr;
+    typedef unsigned long long PAddr;
+    typedef unsigned long long Size;
 public:
     // The information we have at boot time (built by MKBI)
     // Modifications to this map requires adjustments at MKBI and SETUP

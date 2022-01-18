@@ -37,7 +37,7 @@ class System
     friend void ::operator delete[](void *);					// for _heap
 
 public:
-    static System_Info * const info() { assert(_si); return _si; }
+    static System_Info * const info() { return reinterpret_cast<System_Info *>(Memory_Map::SYS_INFO); }
 
 private:
     static void init();

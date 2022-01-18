@@ -204,8 +204,8 @@ public:
     static Reg sctlr() { Reg r; ASM("mrs %0, sctlr_el1" : "=r"(r)); return r; }
     static void sctlr(Reg r) { ASM("msr sctlr_el1, %0" : : "r"(r) :); }
 
-    static Reg actlr() { return 0; }
-    static void actlr(Reg r) { }
+    // static Reg actlr() { return 0; }
+    // static void actlr(Reg r) { }
 
     static void dsb() { ASM("dsb sy"); }
     static void isb() { ASM("isb"); }
@@ -305,7 +305,7 @@ public:
         DCACHE      = 1 << 2,  // Data cache enable
         BRANCH_PRED = 1 << 11, // Z bit, branch prediction enable
         ICACHE      = 1 << 12, // Instruction cache enable
-        AFE         = 1 << 29  // Access Flag enable //TODO
+        // AFE         = 1 << 29  // Access Flag enable //TODO
     };
 
     // ACTLR bits
@@ -325,7 +325,54 @@ public:
     // HCR_EL2
     enum {
         HCR_EL2_RW = 1 << 31,
-        HCR_EL2_SWIO = 1 << 1
+        HCR_EL2_SWIO = 1 << 1,
+    };
+
+    // TCR_EL1
+    enum {
+        TCR_VADDR_BITS = 42l,
+        TCR_PADDR_BITS = 42l,
+
+        TCR_T0SZ = ((64 - (TCR_VADDR_BITS)) << 0),
+        TCR_T1SZ = ((64 - (TCR_VADDR_BITS)) << 16),
+        TCR_TxSZ = (TCR_T0SZ | TCR_T1SZ),
+
+        TCR_IRGN0_WBWA = 1ul << 8,
+        TCR_ORGN0_WBWA = 1ul << 10,
+        TCR_IRGN1_WBWA = 1ul << 24,
+        TCR_ORGN1_WBWA = 1ul << 26,
+
+        TCR_IRGN_WBWA = (TCR_IRGN0_WBWA | TCR_IRGN1_WBWA),
+        TCR_ORGN_WBWA = (TCR_ORGN0_WBWA | TCR_ORGN1_WBWA),
+        TCR_CACHE_FLAGS = (TCR_IRGN_WBWA | TCR_ORGN_WBWA),
+
+        TCR_SH0_INNER = 3ul << 12,
+        TCR_SH1_INNER = 3ul << 28,
+
+        TCR_SHARED = (TCR_SH0_INNER | TCR_SH1_INNER),
+
+        TCR_TG0_64K = (1UL << 14),
+        TCR_TG1_64K = (3UL << 30),
+        TCR_TG_FLAGS = (TCR_TG0_64K | TCR_TG1_64K),
+
+        TCR_ASID16 = (0UL << 36),
+        TCR_TBI0 = (1UL << 37),
+        TCR_EPD1 = (1 << 23),
+        TCR_IPS = (3UL << 32),
+
+        TCR_VALUE = (TCR_TxSZ | TCR_CACHE_FLAGS | TCR_SHARED | TCR_TG_FLAGS | TCR_ASID16 | TCR_TBI0 | TCR_EPD1 | TCR_IPS),
+
+    };
+
+    enum {
+        //MAIR
+        MAIR_DEVICE_NGNRNE	= 0,
+	    MAIR_DEVICE_NGNRE	= 1,
+        MAIR_DEVICE_GRE		= 2,
+	    MAIR_NORMAL_NC		= 3,
+	    MAIR_NORMAL			= 4,
+
+        MAIR_VALUE = ((0x0 << (MAIR_DEVICE_NGNRNE * 8)) | (0x04 << (MAIR_DEVICE_NGNRE * 8)) | (0x0c << (MAIR_DEVICE_GRE * 8)) |	(0x44 << (MAIR_NORMAL_NC * 8)) |(0xffLL << (MAIR_NORMAL * 8)))
     };
 
     // CPU Context
@@ -439,14 +486,23 @@ public:
 
     // CP15 operations
     //TODO
-    static Reg ttbr0() { return 0; }
-    static void ttbr0(Reg r) { }
+    static Reg ttbr0() { Reg r; ASM("mrs %0, ttbr0_el1" : "=r"(r)); return r; }
+    static void ttbr0(Reg r) { ASM("msr ttbr0_el1, %0" : : "r"(r) :); }
 
-    static Reg ttbcr() { return 0; }
-    static void ttbcr(Reg r) { }
+    static Reg ttbr1() { Reg r; ASM("mrs %0, ttbr1_el1" : "=r"(r)); return r; }
+    static void ttbr1(Reg r) { ASM("msr ttbr1_el1, %0" : : "r"(r) :); }
 
-    static Reg dacr() { return 0; }
-    static void dacr(Reg r) { }
+    // static Reg ttbcr() { return 0; }
+    // static void ttbcr(Reg r) { }
+
+    // static Reg dacr() { return 0; }
+    // static void dacr(Reg r) { }
+
+    static Reg tcr() { Reg r; ASM("mrs %0, tcr_el1" : "=r"(r)); return r; }
+    static void tcr(Reg r) { ASM("msr tcr_el1, %0" : : "r"(r) :); }
+
+    static Reg mair() { Reg r; ASM("mrs %0, mair_el1" : "=r"(r)); return r; }
+    static void mair(Reg r) { ASM("msr mair_el1, %0" : : "r"(r) :); }
 
     static Reg pd() { return ttbr0(); }
     static void pd(Reg r) {  ttbr0(r); }
