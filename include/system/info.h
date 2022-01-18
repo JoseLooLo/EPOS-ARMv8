@@ -11,9 +11,9 @@ __BEGIN_SYS
 struct System_Info_Common
 {
 protected:
-    typedef unsigned int LAddr;
-    typedef unsigned int PAddr;
-    typedef unsigned int Size;
+    typedef unsigned long long LAddr;
+    typedef unsigned long long PAddr;
+    typedef unsigned long long Size;
 
 public:
     // The information we have at boot time (built by MKBI)
