@@ -85,8 +85,8 @@ public:
         };
 
         enum {
-            PT_MASK = (~(PAGE_SIZE - 1)),
-            PD_MASK = (~(DIRECTORY_SHIFT - 1)),
+            PT_MASK = ((PAGE_SIZE - 1)),
+            PD_MASK = ((PAGE_SIZE - 1)),
         };
 
     public:
@@ -190,7 +190,7 @@ public:
             _pt->remap(phy_addr, _from, _to, flags);
         }
 
-        Chunk(Phy_Addr pt, unsigned int from, unsigned int to, Flags flags)
+        Chunk(Phy_Addr pt, unsigned long from, unsigned long to, Flags flags)
         : _from(from), _to(to), _pts(page_tables(_to - _from)), _flags(flags), _pt(pt) {}
 
         ~Chunk() {
@@ -204,10 +204,10 @@ public:
             free(_pt, _pts);
         }
 
-        unsigned int pts() const { return _pts; }
+        unsigned long pts() const { return _pts; }
         Page_Flags flags() const { return _flags; }
         Page_Table * pt() const { return _pt; }
-        unsigned int size() const { return (_to - _from) * sizeof(Page); }
+        unsigned long size() const { return (_to - _from) * sizeof(Page); }
 
         Phy_Addr phy_address() const {
             return (!((_flags & Page_Flags::PT_CONT))) ? Phy_Addr(indexes((*_pt)[_from])) : Phy_Addr(false);
@@ -239,9 +239,9 @@ public:
         }
 
     private:
-        unsigned int _from;
-        unsigned int _to;
-        unsigned int _pts;
+        unsigned long _from;
+        unsigned long _to;
+        unsigned long _pts;
         Page_Flags _flags;
         Page_Table * _pt; // this is a physical address
     };
@@ -345,6 +345,7 @@ public:
     };
 
    // DMA_Buffer
+   //Não utilizado ?
     class DMA_Buffer: public Chunk
     {
     public:

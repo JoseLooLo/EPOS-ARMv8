@@ -16,6 +16,7 @@ extern "C" { void _int_entry();
 }
 
 // Class methods
+//TODO vector table
 void IC::init()
 {
     db<Init, IC>(TRC) << "IC::init()" << endl;

@@ -679,10 +679,10 @@ void Setup::setup_sys_pd()
     sys_pd[MMU::directory(SYS)] = MMU::phy2pde(si->pmm.sys_pt);
     db<Setup>(INF) << "pds[" << MMU::directory(SYS) << "]=" << sys_pd[MMU::directory(SYS)] << ",addr="<< &sys_pd[MMU::directory(SYS)] << endl;
     // Two sys_pt for data
-    sys_pd[MMU::directory(SYS) + 1] = MMU::phy2pde(si->pmm.sys_pt + sizeof(Page_Table));
-    db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 1 << "]=" << sys_pd[MMU::directory(SYS) + 1] << ",addr="<< &sys_pd[MMU::directory(SYS) + 1] << endl;
-    sys_pd[MMU::directory(SYS) + 2] = MMU::phy2pde(si->pmm.sys_pt + 2 * sizeof(Page_Table));
-    db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 2 << "]=" << sys_pd[MMU::directory(SYS) + 2] << ",addr="<< &sys_pd[MMU::directory(SYS) + 2] << endl;
+    // sys_pd[MMU::directory(SYS) + 1] = MMU::phy2pde(si->pmm.sys_pt + sizeof(Page_Table));
+    // db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 1 << "]=" << sys_pd[MMU::directory(SYS) + 1] << ",addr="<< &sys_pd[MMU::directory(SYS) + 1] << endl;
+    // sys_pd[MMU::directory(SYS) + 2] = MMU::phy2pde(si->pmm.sys_pt + 2 * sizeof(Page_Table));
+    // db<Setup>(INF) << "pds[" << MMU::directory(SYS) + 2 << "]=" << sys_pd[MMU::directory(SYS) + 2] << ",addr="<< &sys_pd[MMU::directory(SYS) + 2] << endl;
     db<Setup>(INF) << "attach SYS on sys pd done" << endl;
 
     // Attach the first APPLICATION CODE (i.e. app_code_pt)
