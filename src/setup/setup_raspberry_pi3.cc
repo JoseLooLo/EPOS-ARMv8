@@ -270,25 +270,17 @@ void Setup::build_lm()
         si->lm.sys_segments = sys_elf->segments();
         si->lm.sys_code = sys_elf->segment_address(0);
         si->lm.sys_code_size = sys_elf->segment_size(0);
-        if (sys_elf->segments() > 1) {
-            if(sys_elf->segment_address(1) < si->lm.sys_code)
-                si->lm.sys_code = sys_elf->segment_address(1);
-            si->lm.sys_code_size += sys_elf->segment_size(1);
-        }
-
-        db<Setup>(INF) << "SYS Segments: " << sys_elf->segments()<< endl;
-
-        if(sys_elf->segments() > 2) {
-            for(int i = 2; i < sys_elf->segments(); i++) {
+        if(sys_elf->segments() > 1) {
+            for(int i = 1; i < sys_elf->segments(); i++) {
                 if(sys_elf->segment_type(i) != PT_LOAD)
                     continue;
-                if(sys_elf->segment_address(i) < si->lm.sys_data)
-                    si->lm.sys_data = sys_elf->segment_address(i);
-                si->lm.sys_data_size += sys_elf->segment_size(i);
+                if(sys_elf->segment_address(i) < si->lm.sys_code)
+                    si->lm.sys_code = sys_elf->segment_address(i);
+                si->lm.sys_code_size += sys_elf->segment_size(i);
             }
+            db<Setup>(INF) << "SYS Segments: " << sys_elf->segments()<< endl;
             db<Setup>(INF) << "SYS Segments[0]: " << reinterpret_cast<void *>(sys_elf->segment_address(0)) << ", size="<< sys_elf->segment_size(0) << endl;
             db<Setup>(INF) << "SYS Segments[1]: " << reinterpret_cast<void *>(sys_elf->segment_address(1)) << ", size="<< sys_elf->segment_size(1) << endl;
-            db<Setup>(INF) << "SYS Segments[2]: " << reinterpret_cast<void *>(sys_elf->segment_address(2)) << ", size="<< sys_elf->segment_size(2) << endl;
         }
 
         // CODE and DATA Segments are concatenated, only code seg is available...
@@ -554,7 +546,7 @@ void Setup::setup_sys_pt()
     // SYSTEM data
     //Não tem nenhum dado mas infelizmente o endereço é usado em algum lugar.
     //Mapeia alguns endereços para não dar problemas
-    setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA)]), si->pmm.sys_data, MMU::pages(si->lm.sys_data_size + sizeof(Page)), MMU::page_tables(MMU::pages(si->lm.sys_data_size + sizeof(Page))), Flags::SYS, true);
+    setup_pt(reinterpret_cast<PT_Entry *>(&sys_pt[MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA)]), si->pmm.sys_data, MMU::pages(si->lm.sys_data_size + sizeof(Page)), MMU::page_tables(MMU::pages(si->lm.sys_data_size+ sizeof(Page))), Flags::SYS, true);
     db<Setup>(INF) << "SYS_DATA PT = " << MMU::directory(SYS_DATA - SYS) * (MMU::PT_ENTRIES) + MMU::page(SYS_DATA) << ",size=" << si->lm.sys_data_size << endl;
 
     // SYSTEM stack (used only during init and for the ukernel model)
@@ -771,8 +763,8 @@ void Setup::load_parts()
     if(sizeof(System_Info) > sizeof(Page))
         db<Setup>(WRN) << "System_Info is bigger than a page (" << sizeof(System_Info) << ")!" << endl;
 
-    // if(Traits<Setup>::hysterically_debugged)
-    //     db<Setup>(INF) << "Setup:SYS_INFO: " << MMU::Translation(SYS_INFO) << endl;
+    if(Traits<Setup>::hysterically_debugged)
+        db<Setup>(INF) << "Setup:SYS_INFO: " << MMU::Translation(SYS_INFO) << endl;
     memcpy(reinterpret_cast<void *>(SYS_INFO), si, sizeof(System_Info));
     si = reinterpret_cast<System_Info *>(SYS_INFO);
 
@@ -780,11 +772,11 @@ void Setup::load_parts()
     if(si->lm.has_ini) {
         db<Setup>(TRC) << "Setup::load_init()" << endl;
         ELF * ini_elf = reinterpret_cast<ELF *>(&bi[si->bm.init_offset]);
-        // if(Traits<Setup>::hysterically_debugged) {
-        //     db<Setup>(INF) << "Setup:ini_elf: " << MMU::Translation(ini_elf) << endl;
-        //     db<Setup>(INF) << "Setup:ini_elf[0]: " << MMU::Translation(ini_elf->segment_address(0)) << endl;
-        //     db<Setup>(INF) << "Setup:ini_elf[0].size: " << ini_elf->segment_size(0) << endl;
-        // }
+        if(Traits<Setup>::hysterically_debugged) {
+            db<Setup>(INF) << "Setup:ini_elf: " << MMU::Translation(ini_elf) << endl;
+            db<Setup>(INF) << "Setup:ini_elf[0]: " << MMU::Translation(ini_elf->segment_address(0)) << endl;
+            db<Setup>(INF) << "Setup:ini_elf[0].size: " << ini_elf->segment_size(0) << endl;
+        }
         if(ini_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "INIT code segment was corrupted during SETUP!" << endl;
             panic();
@@ -800,33 +792,33 @@ void Setup::load_parts()
     if(si->lm.has_sys) {
         db<Setup>(TRC) << "Setup::load_os()" << endl;
         ELF * sys_elf = reinterpret_cast<ELF *>(&bi[si->bm.system_offset]);
-        // if(Traits<Setup>::hysterically_debugged) {
-        //     db<Setup>(INF) << "Setup:sys_elf: " << MMU::Translation(sys_elf) << endl;
-        //     db<Setup>(INF) << "Setup:sys_elf[0]: " << MMU::Translation(sys_elf->segment_address(0)) << endl;
-        //     db<Setup>(INF) << "Setup:sys_elf[0].size: " << sys_elf->segment_size(0) << endl;
-        // }
+        if(Traits<Setup>::hysterically_debugged) {
+            db<Setup>(INF) << "Setup:sys_elf: " << MMU::Translation(sys_elf) << endl;
+            db<Setup>(INF) << "Setup:sys_elf[0]: " << MMU::Translation(sys_elf->segment_address(0)) << endl;
+            db<Setup>(INF) << "Setup:sys_elf[0].size: " << sys_elf->segment_size(0) << endl;
+        }
         if(sys_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "OS code segment was corrupted during SETUP!" << endl;
             panic();
         }
-        // for(int i = 1; i < sys_elf->segments(); i++) {
-        //     if(sys_elf->load_segment(i) < 0) {
-        //         db<Setup>(ERR) << "OS data segment was corrupted during SETUP!" << endl;
-        //         panic();
-        //     }
-        // }
+        for(int i = 1; i < sys_elf->segments(); i++) {
+            if(sys_elf->load_segment(i) < 0) {
+                db<Setup>(ERR) << "OS data segment was corrupted during SETUP!" << endl;
+                panic();
+            }
+        }
     }
 
     // Load APP
     if(si->lm.has_app) {
         db<Setup>(TRC) << "Setup::load_app()" << endl;
         ELF * app_elf = reinterpret_cast<ELF *>(&bi[si->bm.application_offset]);
-        // if(Traits<Setup>::hysterically_debugged) {
-        //     db<Setup>(INF) << "Setup:app_elf: " << (void*)app_elf << endl;
-        //     db<Setup>(INF) << "Setup:app_elf: " << MMU::Translation(app_elf) << endl;
-        //     db<Setup>(INF) << "Setup:app_elf[0]: " << MMU::Translation(app_elf->segment_address(0)) << endl;
-        //     db<Setup>(INF) << "Setup:app_elf[0].size: " << app_elf->segment_size(0) << endl;
-        // }
+        if(Traits<Setup>::hysterically_debugged) {
+            db<Setup>(INF) << "Setup:app_elf: " << (void*)app_elf << endl;
+            db<Setup>(INF) << "Setup:app_elf: " << MMU::Translation(app_elf) << endl;
+            db<Setup>(INF) << "Setup:app_elf[0]: " << MMU::Translation(app_elf->segment_address(0)) << endl;
+            db<Setup>(INF) << "Setup:app_elf[0].size: " << app_elf->segment_size(0) << endl;
+        }
         if(app_elf->load_segment(0) < 0) {
             db<Setup>(ERR) << "Application code segment was corrupted during SETUP!" << endl;
             panic();
@@ -842,8 +834,8 @@ void Setup::load_parts()
     // Load EXTRA
     if(si->lm.has_ext) {
         db<Setup>(TRC) << "Setup::load_extra()" << endl;
-        // if(Traits<Setup>::hysterically_debugged)
-        //     db<Setup>(INF) << "Setup:APP_EXTRA:" << MMU::Translation(si->lm.app_extra) << endl;
+        if(Traits<Setup>::hysterically_debugged)
+            db<Setup>(INF) << "Setup:APP_EXTRA:" << MMU::Translation(si->lm.app_extra) << endl;
         memcpy(reinterpret_cast<void *>(si->lm.app_extra), &bi[si->bm.extras_offset], si->lm.app_extra_size);
     }
 }

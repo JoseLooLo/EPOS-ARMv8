@@ -56,7 +56,7 @@ __BEGIN_UTIL
 template<int BITS> class Padding {} __attribute__((packed));
 template<> class Padding<8>  { char _padding;          } __attribute__((packed));
 template<> class Padding<16> { short int _padding;     } __attribute__((packed));
-template<> class Padding<32> { long int _padding;      } __attribute__((packed));
+template<> class Padding<32> { int _padding;      } __attribute__((packed));
 template<> class Padding<64> { long long int _padding; } __attribute__((packed));
 
 typedef unsigned char Percent;

@@ -46,6 +46,7 @@ struct Memory_Map: public Cortex_Memory_Map
         IO              = Traits<Machine>::IO,
         SYS             = Traits<Machine>::SYS,
         SYS_CODE        = Traits<System>::multitask ? SYS + 0x00000000 : NOT_USED,
+        SYS_DATA        = Traits<System>::multitask ? SYS + 0x00400000 : NOT_USED,
         // SYS_INFO        = Traits<System>::multitask ? SYS + 0x01000000 : NOT_USED,
         // SYS_PT          = Traits<System>::multitask ? SYS + 0x01010000 : NOT_USED, // 4KB = 256 + 256 + 256 entries to map from SYS to SYS_STACK
         // SYS_PD          = Traits<System>::multitask ? SYS + 0x01020000 : NOT_USED, // 16KB mem == 4k PD entries
@@ -56,9 +57,8 @@ struct Memory_Map: public Cortex_Memory_Map
         SYS_INFO        = Traits<System>::multitask ? SYS + 0x00500000 : NOT_USED,
         SYS_PT          = Traits<System>::multitask ? SYS + 0x00510000 : NOT_USED, // 4KB = 256 + 256 + 256 entries to map from SYS to SYS_STACK
         SYS_PD          = Traits<System>::multitask ? SYS + 0x00520000 : NOT_USED, // 16KB mem == 4k PD entries
-        SYS_DATA        = Traits<System>::multitask ? SYS + 0x00560000 : NOT_USED,
-        SYS_STACK       = Traits<System>::multitask ? SYS + 0x00200000 : NOT_USED, // 16KB mem == STACK_SIZE
-        SYS_HEAP        = Traits<System>::multitask ? SYS + 0x00300000 : NOT_USED
+        SYS_STACK       = Traits<System>::multitask ? SYS + 0x00600000 : NOT_USED, // 16KB mem == STACK_SIZE
+        SYS_HEAP        = Traits<System>::multitask ? SYS + 0x00700000 : NOT_USED
     };
 };
 

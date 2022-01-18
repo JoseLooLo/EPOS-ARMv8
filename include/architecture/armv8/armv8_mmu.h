@@ -71,7 +71,7 @@ public:
             //PT_SH_I or PT_SH_O??
 
             //Inner shareable, User access RW
-            APP  = (PT_NG | PT_SH_I | PT_RW_USR | PTE_FLAGS),
+            APP  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //Inner shareable, User access RW, Execution never (User and kernel)
             APPD = (PT_NG | PT_SH_I | PT_RW_USR | PT_PXN | PT_UXN | PTE_FLAGS),
             //Inner shareable, User access RO
