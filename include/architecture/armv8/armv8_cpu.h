@@ -215,6 +215,7 @@ public:
     static void vbar_el1(Reg r) {
         ASM("msr vbar_el1, %0" : : "r"(r) : );
     }
+    static Reg vbar_el1() { Reg r; ASM("mrs %0, vbar_el1" : "=r"(r)); return r; }
 };
 
 class ARMv8_A: public ARMv8

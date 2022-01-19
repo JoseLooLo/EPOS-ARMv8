@@ -1032,41 +1032,100 @@ void _setup()
 void _vector_table() {
     ASM(
         "_vector_table: \n"
-        ".balign 0x80 \n"
-        "mov x0, x0 \n"
-        ".balign 0x80 \n"
-        "mov x1, x0 \n"
-        ".balign 0x80 \n"
-        "mov x2, x0 \n"
-        ".balign 0x80 \n"
-        "mov x3, x0 \n"
 
+        //CurrentEL SP_EL0 Sync
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_sync\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x4, x0 \n"
+        //CurrentEL SP_EL0 IRQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_irq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x5, x0 \n"
+        //CurrentEL SP_EL0 FIQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_fiq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x6, x0 \n"
+        //CurrentEL SP_EL0 SError
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_serror\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x7, x0 \n"
+        //=======================//
 
+        //CurrentEL SP_ELx Sync
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_sync\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x8, x0 \n"
+        //CurrentEL SP_ELx IRQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_irq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x9, x0 \n"
+        //CurrentEL SP_ELx FIQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_fiq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x10, x0 \n"
+        //CurrentEL SP_ELx SError
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_serror\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x11, x0 \n"
+        //=======================//
 
+        //Lower EL from Aarch64 Sync
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_sync\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x12, x0 \n"
+        //Lower EL from Aarch64 IRQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_irq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x13, x0 \n"
+        //Lower EL from Aarch64 FIQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_fiq\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x14, x0 \n"
+        //Lower EL from Aarch64 SError
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_serror\n"
+        "br x20\n"
         ".balign 0x80 \n"
-        "mov x15, x0 \n");
+        //=======================//
+
+        //Lower EL from Aarch32 Sync
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_sync\n"
+        "br x20\n"
+        ".balign 0x80 \n"
+        //Lower EL from Aarch32 IRQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_irq\n"
+        "br x20\n"
+        ".balign 0x80 \n"
+        //Lower EL from Aarch32 FIQ
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_fiq\n"
+        "br x20\n"
+        ".balign 0x80 \n"
+        //Lower EL from Aarch32 SError
+        "str x20, [sp, #-8]!\n"
+        "ldr x20, _vt_serror\n"
+        "br x20\n"
+        ".balign 0x80 \n"
+        //=======================//
+
+        "_vt_sync: .dword 0x0\n"
+        "_vt_irq: .dword 0x0\n"
+        "_vt_fiq: .dword 0x0\n"
+        "_vt_serror: .dword 0x0\n"
+        );
 }
 
 
