@@ -11,7 +11,49 @@ unsigned int CPU::_bus_clock;
 // Class methods
 void CPU::Context::save() volatile
 {
-    ASM("save:");
+    ASM(
+    "str x0, [%0,#24]!\n"
+    "str x1, [%0,#8]!\n"
+    "str x2, [%0,#8]!\n"
+    "str x3, [%0,#8]!\n"
+    "str x4, [%0,#8]!\n"
+    "str x5, [%0,#8]!\n"
+    "str x6, [%0,#8]!\n"
+    "str x7, [%0,#8]!\n"
+    "str x8, [%0,#8]!\n"
+    "str x9, [%0,#8]!\n"
+    "str x10, [%0,#8]!\n"
+
+    "str x11, [%0,#8]!\n"
+    "str x12, [%0,#8]!\n"
+    "str x13, [%0,#8]!\n"
+    "str x14, [%0,#8]!\n"
+    "str x15, [%0,#8]!\n"
+    "str x16, [%0,#8]!\n"
+    "str x17, [%0,#8]!\n"
+    "str x18, [%0,#8]!\n"
+    "str x19, [%0,#8]!\n"
+    "str x20, [%0,#8]!\n"
+
+    "str x21, [%0,#8]!\n"
+    "str x22, [%0,#8]!\n"
+    "str x23, [%0,#8]!\n"
+    "str x24, [%0,#8]!\n"
+    "str x25, [%0,#8]!\n"
+    "str x26, [%0,#8]!\n"
+    "str x27, [%0,#8]!\n"
+    "str x28, [%0,#8]!\n"
+    "str x29, [%0,#8]!\n"
+    "str x30, [%0,#8]!\n"
+    //lr
+    "str x30, [%0,#8]!\n"
+
+    //pc
+    "str x20, [sp, #-8]!\n"
+    "mov x20, .         \n"
+    "str x20, [%0,#8]!\n"
+    "ldr x20, [sp], #8\n"
+     : : "r"(this));
 //     ASM(
 //         "       str     r12, [sp,#-68]          \n"
 //         "       mov     r12, pc                 \n");

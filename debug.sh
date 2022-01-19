@@ -7,7 +7,7 @@ konsole -e aarch64-elf-gdb -ex "target remote:1236" -ex "set confirm off" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/setup_raspberry_pi3" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/system_raspberry_pi3" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/init_raspberry_pi3" \
--ex "b EPOS::S::Setup::call_next()" \
+-ex "b save() volatile" \
 -ex "c" \
 -ex "layout split"'
 

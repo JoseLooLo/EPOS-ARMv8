@@ -87,7 +87,7 @@ protected:
 public:
     // TODO
     //static Log_Addr pc() { Reg r; ASM("mov %0, pc" : "=r"(r) :); return r; } // due to RISC pipelining, PC is read with a +8 (4 for thumb) offset
-    static Log_Addr pc() { return 0; } // due to RISC pipelining, PC is read with a +8 (4 for thumb) offset
+    static Log_Addr pc() { Reg r; ASM("mov %0, ." : "=r"(r) :); return r; } // due to RISC pipelining, PC is read with a +8 (4 for thumb) offset
 
     static Log_Addr sp() { Reg r; ASM("mov %0, sp" : "=r"(r) :); return r; }
     static void sp(Log_Addr sp) { ASM("mov sp, %0" : : "r"(Reg(sp))); ASM("isb"); }
