@@ -11,8 +11,14 @@ unsigned int CPU::_bus_clock;
 // Class methods
 void CPU::Context::save() volatile
 {
+    ASM("str x20, [sp, #-8]!\n");
+    state_2_x20();
+    ASM("str x20, [%0,#16]!\n"
+    "ldr x20, [sp], #8\n"
+    : : "r"(this));
+
     ASM(
-    "str x0, [%0,#24]!\n"
+    "str x0, [%0,#8]!\n"
     "str x1, [%0,#8]!\n"
     "str x2, [%0,#8]!\n"
     "str x3, [%0,#8]!\n"
@@ -47,53 +53,61 @@ void CPU::Context::save() volatile
     "str x30, [%0,#8]!\n"
     //lr
     "str x30, [%0,#8]!\n"
-
-    //pc
+    : : "r"(this));
+    //TODO pc
+    ASM(
     "str x20, [sp, #-8]!\n"
     "mov x20, .         \n"
     "str x20, [%0,#8]!\n"
     "ldr x20, [sp], #8\n"
      : : "r"(this));
-//     ASM(
-//         "       str     r12, [sp,#-68]          \n"
-//         "       mov     r12, pc                 \n");
-// if(thumb)
-//     ASM("       orr     r12, #1                 \n");
-
-//     ASM("       str     r12, [%0, #-64]         \n"
-//         "       ldr     r12, [sp, #-68]         \n"
-//         "       str     lr,  [%0, #-60]         \n"
-//         "       str     r12, [%0, #-56]         \n"
-//         "       str     r11, [%0, #-52]         \n"
-//         "       str     r10, [%0, #-48]         \n"
-//         "       str     r9,  [%0, #-44]         \n"
-//         "       str     r8,  [%0, #-40]         \n"
-//         "       str     r7,  [%0, #-36]         \n"
-//         "       str     r6,  [%0, #-32]         \n"
-//         "       str     r5,  [%0, #-28]         \n"
-//         "       str     r4,  [%0, #-24]         \n"
-//         "       str     r3,  [%0, #-20]         \n"
-//         "       str     r2,  [%0, #-16]         \n"
-//         "       str     r1,  [%0, #-12]         \n"
-//         "       str     r0,  [%0, #-8]          \n" : : "r"(this));
-//     psr_to_r12();
-//     ASM("       str     r12, [%0, #-4]          \n"
-//         "       ldr     r12, [sp, #-68]         \n"
-//         "       add     %0, %0, #-68            \n"
-//         "       bx      lr                      \n" : : "r"(this));
 }
 
 void CPU::Context::load() const volatile
 {
-    // ASM("       mov     sp, %0                  \n"
-    //     "       isb                             \n" : : "r"(this)); // serialize the pipeline so that SP gets updated before the pop
+    ASM("mov sp, %0     \n"
+        "isb            \n" : : "r"(this)); // serialize the pipeline so that SP gets updated before the pop
 
-    // ASM("       add     sp, #8                  \n");       // skip usp, ulr
+    ASM("add sp, sp, #16    \n");       // skip usp, ulr
 
-    // ASM("       pop     {r12}                   \n");
-    // r12_to_psr();                                           // the context is loaded in SVC; with multitasking, a second context drives a mode change at _int_leave
-    // ASM("       pop     {r0-r12, lr}            \n"
-    //     "       pop     {pc}                    \n");
+    //Load flags
+    ASM("ldr x20, [sp], #8\n");
+    // x20_to_state();
+
+    ASM("str x20, [sp, #-8]!\n");
+    state_2_x20();
+    x20_to_state();
+    ASM(
+    "ldr x20, [sp]\n"
+    "add sp, sp, 8\n"
+    : : "r"(this));
+
+    //Load regs
+    //This is probably a bug
+    ASM("ldr  x0, [sp], #8              \n"
+		"ldp	x1, x2, [sp], #16       \n"
+		"ldp	x3, x4, [sp], #16       \n"
+		"ldp	x5, x6, [sp], #16       \n"
+		"ldp	x7, x8, [sp], #16       \n"
+		"ldp	x9, x10, [sp], #16      \n"
+		"ldp	x11, x12, [sp], #16     \n"
+		"ldp	x13, x14, [sp], #16     \n"
+		"ldp	x15, x16, [sp], #16     \n"
+		"ldp	x17, x18, [sp], #16     \n"
+		"ldp	x19, x20, [sp], #16     \n"
+		"ldp	x21, x22, [sp], #16     \n"
+		"ldp	x23, x24, [sp], #16     \n"
+		"ldp	x25, x26, [sp], #16     \n"
+		"ldp	x27, x28, [sp], #16     \n"
+		"ldp	x29, x30, [sp], #16     \n"
+        //lr
+        "ldr  x30, [sp], #8             \n");
+        //load PC ?
+        ASM(
+        "ldr  x30, [sp], #8             \n"
+        "msr elr_el1, x30               \n"
+        "ldr  x30, [sp, #-16]           \n"
+        "eret");
 }
 
 // This function assumes A[T]PCS (i.e. "o" is in r0/a0 and "n" is in r1/a1)

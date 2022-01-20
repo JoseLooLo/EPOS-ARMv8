@@ -1121,10 +1121,10 @@ void _vector_table() {
         ".balign 0x80 \n"
         //=======================//
 
-        "_vt_sync: .dword 0x0\n"
-        "_vt_irq: .dword 0x0\n"
-        "_vt_fiq: .dword 0x0\n"
-        "_vt_serror: .dword 0x0\n"
+        "_vt_sync: .word 0x0\n"
+        "_vt_irq: .word 0x0\n"
+        "_vt_fiq: .word 0x0\n"
+        "_vt_serror: .word 0x0\n"
         );
 }
 

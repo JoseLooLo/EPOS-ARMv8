@@ -194,12 +194,6 @@ public:
     }
 
     // ARMv8 specifics
-    // TODO
-    // static Reg r0() { return 0; }
-    // static void r0(Reg r) {  }
-
-    // static Reg r1() { return 0; }
-    // static void r1(Reg r) {}
 
     static Reg sctlr() { Reg r; ASM("mrs %0, sctlr_el1" : "=r"(r)); return r; }
     static void sctlr(Reg r) { ASM("msr sctlr_el1, %0" : : "r"(r) :); }
@@ -226,23 +220,22 @@ public:
     // CPU Flags
     typedef Reg Flags;
     enum {
+        FLAG_M          = 3    << 0,
+        FLAG_MES        = 0    << 4,
         FLAG_F          = 1    << 6,       // FIQ disable
         FLAG_I          = 1    << 7,       // IRQ disable
+        FLAG_A          = 1    << 8,       // SError disable
+        FLAG_D          = 1    << 9,       // Debug disable
 
-        //TODO
-        FLAG_M          = 0x1f << 0,       // Processor Mode (5 bits)
-        FLAG_T          = 1    << 5,       // Thumb state
-        FLAG_A          = 1    << 8,       // Imprecise Abort disable
-        FLAG_E          = 1    << 9,       // Endianess (0 ->> little, 1 -> big)
-        FLAG_GE         = 0xf  << 16,      // SIMD Greater than or Equal (4 bits)
-        FLAG_J          = 1    << 24,      // Jazelle state
-        FLAG_Q          = 1    << 27,      // Underflow and/or DSP saturation
-        FLAG_V          = 1    << 28,      // Overflow
-        FLAG_C          = 1    << 29,      // Carry
-        FLAG_Z          = 1    << 30,      // Zero
-        FLAG_N          = 1    << 31,      // Negative
+        FLAG_IL         = 1    << 20,
+        FLAG_SS         = 1    << 21,
 
-        // FLAG_M values
+        // NZCV
+        FLAG_V          = 1    << 28,
+        FLAG_C          = 1    << 29,
+        FLAG_Z          = 1    << 30,
+        FLAG_N          = 1    << 31,
+// FLAG_M values
         MODE_USR        = 0x10,
         MODE_FIQ        = 0x11,
         MODE_IRQ        = 0x12,
@@ -253,6 +246,7 @@ public:
     };
 
     // Exceptions
+    //TODO
     typedef Reg Exception_Id;
     enum {
         EXC_START                   = 1,
@@ -265,6 +259,7 @@ public:
         EXC_FIQ                     = 8
     };
 
+    //TODO ??
     enum {
         CLI_DOMAIN = 0x55555555, // 0b01 - Client, all memory domains check for memory access permission
         MNG_DOMAIN = 0xFFFFFFFF  // 0b11 - Manager, memory access permissions are not checked
@@ -280,6 +275,7 @@ public:
     };
 
     // ACTLR bits
+    //TODO ??
     enum {
         DCACHE_PREFE = 1 << 2, // DCache prefetch Enabled
         SMP          = 1 << 6 // SMP bit
@@ -335,8 +331,8 @@ public:
 
     };
 
+    //MAIR
     enum {
-        //MAIR
         MAIR_DEVICE_NGNRNE	= 0,
 	    MAIR_DEVICE_NGNRE	= 1,
         MAIR_DEVICE_GRE		= 2,
@@ -364,6 +360,13 @@ public:
     //DONE
     static Reg daif() { Reg r; ASM("mrs %0, daif" : "=r"(r)); return r; }
     static void daif(Reg r) { ASM("msr daif, %0" : : "r"(r) :); }
+
+    static Reg nzcv() {Reg r; ASM("mrs %0, nzcv" : "=r"(r)); return r;}
+    static void nzcv(Reg r) { ASM("msr nzcv, %0" : : "r"(r) :);}
+
+    // DONE
+    static Reg elr_el1() {Reg r; ASM("mrs %0, elr_el1" : "=r"(r)); return r;}
+    static void elr_el1(Reg r) { ASM("msr elr_el1, %0" : : "r"(r) :);}
 
     //DONE
     static unsigned int id() {
@@ -397,6 +400,56 @@ public:
     //DONE
     static bool int_enabled() { return !int_disabled(); }
     static bool int_disabled() { return flags() & (FLAG_F | FLAG_I); }
+
+    static void state_2_x20() {
+        ASM(
+            //Save x19
+            "str x19, [sp, #-8]!\n"
+            //DAIF
+            "mrs x19, daif      \n"
+            "orr x20, x20, x19  \n"
+            //NZCV
+            "mrs x19, nzcv      \n"
+            "orr x20, x20, x19  \n"
+            //CurrEL
+            "mrs x19, CurrentEL \n"
+            "orr x20, x20, x19   \n"
+            //SPSel
+            "mrs x19, SPSel     \n"
+            "orr x20, x20, x19  \n"
+            //Restaure x19
+            "ldr x19, [sp]      \n"
+            "add sp, sp, 8      \n"
+        );
+    }
+
+    static void x20_to_state() {
+        //TODO = mask the flags
+        ASM(
+            "msr SPSR_EL1, x20 \n"
+            //Save x19
+            // "str x19, [sp, #-8]!\n"
+            //DAIF
+            // "mrs x19, daif      \n"
+            // "orr x19, x19, x20  \n"
+            // "msr daif, x19      \n"
+            // //NZCV
+            // "mrs x19, nzcv      \n"
+            // "orr x19, x19, x20  \n"
+            // "msr daif, x19      \n"
+            // //CurrEL
+            // "mrs x19, CurrentEL \n"
+            // "orr x19, x19, x20  \n"
+            // "msr daif, x19      \n"
+            // //SPSel
+            // "mrs x19, SPSel \n"
+            // "orr x19, x19, x20  \n"
+            // "msr daif, x19      \n"
+            //Restaure x19
+            // "ldr x19, [sp]      \n"
+            // "add sp, sp, 8      \n"
+        );
+    }
 
     static void smp_barrier(unsigned long cores = cores()) { CPU_Common::smp_barrier<&finc>(cores, id()); }
 
