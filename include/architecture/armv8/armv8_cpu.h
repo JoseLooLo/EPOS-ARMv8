@@ -236,13 +236,13 @@ public:
         FLAG_Z          = 1    << 30,
         FLAG_N          = 1    << 31,
 // FLAG_M values
-        MODE_USR        = 0x10,
-        MODE_FIQ        = 0x11,
-        MODE_IRQ        = 0x12,
-        MODE_SVC        = 0x13,
-        MODE_ABORT      = 0x17,
-        MODE_UNDEFINED  = 0x1b,
-        MODE_SYS        = 0x1f
+        MODE_USR        = 0x00,
+        MODE_FIQ        = 0x11, //TODO
+        MODE_IRQ        = 0x12, //TODO
+        MODE_SVC        = 0x04,
+        MODE_ABORT      = 0x17, //TODO
+        MODE_UNDEFINED  = 0x1b, //TODO
+        MODE_SYS        = 0x04,
     };
 
     // Exceptions

@@ -955,7 +955,8 @@ void _reset()
         ASM("mov x0, #(1 << 31) \n"
             "orr x0, x0, #(1 << 1) \n"
             "msr hcr_el2, x0 \n"
-            "mov x2, #0x3c4 \n"
+            //Use SP_EL1 on EL1
+            "mov x2, #0x3c5 \n"
             "msr spsr_el2, x2 \n"
             "adr x2, _entry \n"
             "msr elr_el2, x2 \n"
@@ -1121,10 +1122,10 @@ void _vector_table() {
         ".balign 0x80 \n"
         //=======================//
 
-        "_vt_sync: .word 0x0\n"
-        "_vt_irq: .word 0x0\n"
-        "_vt_fiq: .word 0x0\n"
-        "_vt_serror: .word 0x0\n"
+        "_vt_sync: .dword 0x0\n"
+        "_vt_irq: .dword 0x0\n"
+        "_vt_fiq: .dword 0x0\n"
+        "_vt_serror: .dword 0x0\n"
         );
 }
 

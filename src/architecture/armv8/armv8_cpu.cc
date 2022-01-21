@@ -13,13 +13,14 @@ void CPU::Context::save() volatile
 {
     ASM("str x20, [sp, #-8]!\n");
     state_2_x20();
-    ASM("str x20, [%0,#16]!\n"
+    ASM("str x20, [%0,#16]\n"
     "ldr x20, [sp], #8\n"
     : : "r"(this));
 
+    ASM("str x0, [sp, #-8]!"); //Save x0
     ASM(
-    "str x0, [%0,#8]!\n"
-    "str x1, [%0,#8]!\n"
+    "str x0, [%0,#24]\n"
+    "str x1, [%0,#32]!\n"
     "str x2, [%0,#8]!\n"
     "str x3, [%0,#8]!\n"
     "str x4, [%0,#8]!\n"
@@ -57,58 +58,99 @@ void CPU::Context::save() volatile
     //TODO pc
     ASM(
     "str x20, [sp, #-8]!\n"
-    "mov x20, .         \n"
+    ".save_pc_temp:\n"
+    "adr x20, .save_pc_temp\n"
+    //"mov x20, .       \n"
     "str x20, [%0,#8]!\n"
     "ldr x20, [sp], #8\n"
      : : "r"(this));
+
+     ASM("ldr x0, [sp], #8\n"); //Restaure x0
 }
 
 void CPU::Context::load() const volatile
 {
-    ASM("mov sp, %0     \n"
-        "isb            \n" : : "r"(this)); // serialize the pipeline so that SP gets updated before the pop
-
-    ASM("add sp, sp, #16    \n");       // skip usp, ulr
-
-    //Load flags
-    ASM("ldr x20, [sp], #8\n");
-    // x20_to_state();
-
-    ASM("str x20, [sp, #-8]!\n");
-    state_2_x20();
+    ASM("str x0, [sp, #-8]!"); //Save x0
+    ASM("ldr x20, [%0, #16]!\n" : : "r"(this)); //Load flags (skip usp and ulr)
     x20_to_state();
-    ASM(
-    "ldr x20, [sp]\n"
-    "add sp, sp, 8\n"
-    : : "r"(this));
 
     //Load regs
-    //This is probably a bug
-    ASM("ldr  x0, [sp], #8              \n"
-		"ldp	x1, x2, [sp], #16       \n"
-		"ldp	x3, x4, [sp], #16       \n"
-		"ldp	x5, x6, [sp], #16       \n"
-		"ldp	x7, x8, [sp], #16       \n"
-		"ldp	x9, x10, [sp], #16      \n"
-		"ldp	x11, x12, [sp], #16     \n"
-		"ldp	x13, x14, [sp], #16     \n"
-		"ldp	x15, x16, [sp], #16     \n"
-		"ldp	x17, x18, [sp], #16     \n"
-		"ldp	x19, x20, [sp], #16     \n"
-		"ldp	x21, x22, [sp], #16     \n"
-		"ldp	x23, x24, [sp], #16     \n"
-		"ldp	x25, x26, [sp], #16     \n"
-		"ldp	x27, x28, [sp], #16     \n"
-		"ldp	x29, x30, [sp], #16     \n"
+    ASM(
+        "add %0, %0, #16\n" //add state bytes and skip x0
+		"ldp	x1, x2, [%0], #16       \n"
+		"ldp	x3, x4, [%0], #16       \n"
+		"ldp	x5, x6, [%0], #16       \n"
+		"ldp	x7, x8, [%0], #16       \n"
+		"ldp	x9, x10, [%0], #16      \n"
+		"ldp	x11, x12, [%0], #16     \n"
+		"ldp	x13, x14, [%0], #16     \n"
+		"ldp	x15, x16, [%0], #16     \n"
+		"ldp	x17, x18, [%0], #16     \n"
+		"ldp	x19, x20, [%0], #16     \n"
+		"ldp	x21, x22, [%0], #16     \n"
+		"ldp	x23, x24, [%0], #16     \n"
+		"ldp	x25, x26, [%0], #16     \n"
+		"ldp	x27, x28, [%0], #16     \n"
+		"ldp	x29, x30, [%0], #16     \n"
         //lr
-        "ldr  x30, [sp], #8             \n");
-        //load PC ?
-        ASM(
-        "ldr  x30, [sp], #8             \n"
+        "ldr  x30, [%0], #8             \n"
+        //pc
+        "ldr  x30, [%0], #8             \n"
         "msr elr_el1, x30               \n"
-        "ldr  x30, [sp, #-16]           \n"
-        "eret");
+        "ldr  x30, [%0, #-16]           \n"
+        : : "r"(this));
+
+        //We have the correct value of the sp now, that is (this) address
+        //Put this address on sp_el0
+        ASM("msr sp_el0, %0": : "r"(this));
+
+        //Now we restore the x0 and write the correct new x0 value
+        ASM(
+            "ldr x0, [sp], #8\n"
+            "ldr x0, [%0, #24]\n"
+            : : "r"(this));
+
+        //Go to application
+        ASM("eret");
 }
+
+// void CPU::Context::load() const volatile
+// {
+//     ASM("mov sp, %0     \n"
+//         "isb            \n" : : "r"(this)); // serialize the pipeline so that SP gets updated before the pop
+
+//     ASM("add sp, sp, #16    \n");       // skip usp, ulr
+
+//     //Load flags
+//     ASM("ldr x20, [sp], #8\n");
+//     x20_to_state();
+
+//     //Load regs
+//     ASM("ldr    x0, [sp], #8            \n"
+// 		"ldp	x1, x2, [sp], #16       \n"
+// 		"ldp	x3, x4, [sp], #16       \n"
+// 		"ldp	x5, x6, [sp], #16       \n"
+// 		"ldp	x7, x8, [sp], #16       \n"
+// 		"ldp	x9, x10, [sp], #16      \n"
+// 		"ldp	x11, x12, [sp], #16     \n"
+// 		"ldp	x13, x14, [sp], #16     \n"
+// 		"ldp	x15, x16, [sp], #16     \n"
+// 		"ldp	x17, x18, [sp], #16     \n"
+// 		"ldp	x19, x20, [sp], #16     \n"
+// 		"ldp	x21, x22, [sp], #16     \n"
+// 		"ldp	x23, x24, [sp], #16     \n"
+// 		"ldp	x25, x26, [sp], #16     \n"
+// 		"ldp	x27, x28, [sp], #16     \n"
+// 		"ldp	x29, x30, [sp], #16     \n"
+//         //lr
+//         "ldr  x30, [sp], #8             \n");
+//         //load PC ?
+//         ASM(
+//         "ldr  x30, [sp], #8             \n"
+//         "msr elr_el1, x30               \n"
+//         "ldr  x30, [sp, #-16]           \n"
+//         "eret");
+// }
 
 // This function assumes A[T]PCS (i.e. "o" is in r0/a0 and "n" is in r1/a1)
 void CPU::switch_context(Context ** o, Context * n)
