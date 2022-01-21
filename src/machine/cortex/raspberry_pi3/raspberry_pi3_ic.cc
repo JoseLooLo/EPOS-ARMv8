@@ -150,34 +150,61 @@ void IC::entry()
 {
         ASM(
         //Restore the reg used by the vector table
+        "mrs x20, daif\n"
+        "mov x20, #960\n"
+        "msr daif, x20\n"
         "ldr  x20, [sp], #8             \n"
+        //Context
+        "str x30, [sp,#-8]!\n"
+        "str x29, [sp,#-8]!\n"
+        "str x28, [sp,#-8]!\n"
+        "str x27, [sp,#-8]!\n"
+        "str x26, [sp,#-8]!\n"
+        "str x25, [sp,#-8]!\n"
+        "str x24, [sp,#-8]!\n"
+        "str x23, [sp,#-8]!\n"
+        "str x22, [sp,#-8]!\n"
+        "str x21, [sp,#-8]!\n"
+        "str x20, [sp,#-8]!\n"
+
+        "str x19, [sp,#-8]!\n"
+        "str x18, [sp,#-8]!\n"
+        "str x17, [sp,#-8]!\n"
+        "str x16, [sp,#-8]!\n"
+        "str x15, [sp,#-8]!\n"
+        "str x14, [sp,#-8]!\n"
+        "str x13, [sp,#-8]!\n"
+        "str x12, [sp,#-8]!\n"
+        "str x11, [sp,#-8]!\n"
+        "str x10, [sp,#-8]!\n"
+
+        "str x9, [sp,#-8]!\n"
+        "str x8, [sp,#-8]!\n"
+        "str x7, [sp,#-8]!\n"
+        "str x6, [sp,#-8]!\n"
+        "str x5, [sp,#-8]!\n"
+        "str x4, [sp,#-8]!\n"
+        "str x3, [sp,#-8]!\n"
+        "str x2, [sp,#-8]!\n"
+        "str x1, [sp,#-8]!\n"
+        "str x0, [sp,#-8]!\n"
+        "mrs x0, elr_el1  \n"
+        "mrs x1, spsr_el1 \n"
+        "str x0, [sp,#-8]!\n"
+        "str x1, [sp,#-8]!\n"
+        "ldr x0, [sp,#16] \n"
+        "ldr x1, [sp,#24] \n"
         //Save the context
-        "stp	x29, x30, [sp, #-16]!   \n"
-		"stp	x27, x28, [sp, #-16]!   \n"
-		"stp	x25, x26, [sp, #-16]!   \n"
-		"stp	x23, x24, [sp, #-16]!   \n"
-		"stp	x21, x22, [sp, #-16]!   \n"
-		"stp	x19, x20, [sp, #-16]!   \n"
-		"stp	x17, x18, [sp, #-16]!   \n"
-		"stp	x15, x16, [sp, #-16]!   \n"
-		"stp	x13, x14, [sp, #-16]!   \n"
-		"stp	x11, x12, [sp, #-16]!   \n"
-		"stp	x9, x10, [sp, #-16]!    \n"
-		"stp	x7, x8, [sp, #-16]!     \n"
-		"stp	x5, x6, [sp, #-16]!     \n"
-		"stp	x3, x4, [sp, #-16]!     \n"
-		"stp	x1, x2, [sp, #-16]!     \n"
-		"str x0, [sp, #-8]!             \n"
-		"mrs	x1, elr_el1             \n"
-		"mrs	x2, spsr_el1            \n"
-		"stp	x1, x2, [sp, #-16]!     \n"
         //Call dispatch
         "bl _dispatch                   \n"
-        //Restore context
-        "ldp	x1, x2, [sp], #16       \n"
-		"msr	elr_el1, x1             \n"
-		"msr	spsr_el1, x2            \n"
-		"ldr  x0, [sp], #8              \n"
+
+        "mov x20, #960\n"
+        "msr daif, x20\n"
+        "ldr  x0, [sp], #8              \n"
+        "msr spsr_el1, x0\n"
+        "ldr  x0, [sp], #8              \n"
+        "msr elr_el1, x0\n"
+        "ldr  x0, [sp], #8              \n"
 		"ldp	x1, x2, [sp], #16       \n"
 		"ldp	x3, x4, [sp], #16       \n"
 		"ldp	x5, x6, [sp], #16       \n"
@@ -193,6 +220,8 @@ void IC::entry()
 		"ldp	x25, x26, [sp], #16     \n"
 		"ldp	x27, x28, [sp], #16     \n"
 		"ldp	x29, x30, [sp], #16     \n"
+        //lr
+        // "ldr  x30, [sp], #8             \n"
         //Return
         "eret                           \n"
         : : "i"(dispatch));
@@ -203,7 +232,9 @@ void IC::dispatch(unsigned int i)
     Interrupt_Id id = int_id();
 
     if((id != INT_SYS_TIMER) || Traits<IC>::hysterically_debugged)
-        db<IC>(TRC) << "IC::dispatch(i=" << id << ")" << endl;
+        db<IC>(TRC) << "IC::dispatch(i=" << id << ",handler=" << hex << reinterpret_cast<void *>(_int_vector[id]) << ")" << endl;
+
+    db<IC>(TRC) << "IC::dispatch(stack=" << CPU::sp() << ")" << endl;
 
     assert(id < INTS);
     if(_eoi_vector[id])

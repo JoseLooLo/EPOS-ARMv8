@@ -1017,8 +1017,8 @@ void _reset()
 void _setup()
 {
     #if defined(__armv8_h)
-    #else
     CPU::int_disable(); // interrupts will be re-enabled at init_end
+    #else
 
     CPU::enable_fpu();
     CPU::flush_caches();

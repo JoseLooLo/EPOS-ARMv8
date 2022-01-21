@@ -102,18 +102,13 @@ public:
 
     template<typename T>
     static T tsl(volatile T & lock) {
-        return lock;
-        // register T old;
-        // register T one = 1;
-        // ASM("1: ldrexb  %0, [%1]        \n"
-        //     "   strexb  r3, %2, [%1]    \n"
-        //     "   cmp     r3, #0          \n"
-        //     "   bne     1b              \n" : "=&r"(old) : "r"(&lock), "r"(one) : "r3", "cc");
-        // return old;
+        __sync_bool_compare_and_swap(&lock, 0, 1);
+        return !lock;
     }
 
     template<typename T>
     static T finc(volatile T & value) {
+        __sync_bool_compare_and_swap(&value, value, value+1);
         return value;
         // register T old;
         // if(sizeof(T) == sizeof(Reg8))
@@ -139,6 +134,7 @@ public:
 
     template<typename T>
     static T fdec(volatile T & value) {
+        __sync_bool_compare_and_swap(&value, value, value-1);
         return value;
         // register T old;
         // if(sizeof(T) == sizeof(Reg8))

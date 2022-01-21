@@ -15,6 +15,6 @@ _start:
 __epos_app_entry:
         // Main's stack was allocated by Thread::init()
         bl      main
-        //push    {r0}         // save main's return value to be used by exit()
+        str x0, [sp,#-8]! // save main's return value to be used by exit()
         bl      _fini
         bl      _exit
