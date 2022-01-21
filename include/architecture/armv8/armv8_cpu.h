@@ -394,14 +394,15 @@ public:
     }
 
     //DONE
-    static void int_enable() {  flags(flags() & ~(FLAG_F | FLAG_I)); }
-    static void int_disable() { flags(flags() | (FLAG_F | FLAG_I)); }
+    static void int_enable() {  daif(daif() & ~(FLAG_F | FLAG_I)); }
+    static void int_disable() { daif(daif() | (FLAG_F | FLAG_I)); }
 
     //DONE
     static bool int_enabled() { return !int_disabled(); }
-    static bool int_disabled() { return flags() & (FLAG_F | FLAG_I); }
+    static bool int_disabled() { return daif() & (FLAG_F | FLAG_I); }
 
     static void state_2_x20() {
+        //TODO - mask flags
         ASM(
             //Save x19
             "str x19, [sp, #-8]!\n"
@@ -424,30 +425,8 @@ public:
     }
 
     static void x20_to_state() {
-        //TODO = mask the flags
         ASM(
             "msr SPSR_EL1, x20 \n"
-            //Save x19
-            // "str x19, [sp, #-8]!\n"
-            //DAIF
-            // "mrs x19, daif      \n"
-            // "orr x19, x19, x20  \n"
-            // "msr daif, x19      \n"
-            // //NZCV
-            // "mrs x19, nzcv      \n"
-            // "orr x19, x19, x20  \n"
-            // "msr daif, x19      \n"
-            // //CurrEL
-            // "mrs x19, CurrentEL \n"
-            // "orr x19, x19, x20  \n"
-            // "msr daif, x19      \n"
-            // //SPSel
-            // "mrs x19, SPSel \n"
-            // "orr x19, x19, x20  \n"
-            // "msr daif, x19      \n"
-            //Restaure x19
-            // "ldr x19, [sp]      \n"
-            // "add sp, sp, 8      \n"
         );
     }
 

@@ -117,55 +117,55 @@ void CPU::Context::load() const volatile
 // This function assumes A[T]PCS (i.e. "o" is in r0/a0 and "n" is in r1/a1)
 void CPU::switch_context(Context ** o, Context * n)
 {
-    // //Save context
-    // ASM(
-    // //PC and LR
-    // "add sp, sp, #-8 \n"
-    // "str x30, [sp]   \n"
-    // "adr x30, .ret    \n"
-    // "str x30, [sp, #8]\n"
-    // //x30 to x0
-    // "str x30, [sp,#-8]!\n"
-    // "str x29, [sp,#-8]!\n"
-    // "str x28, [sp,#-8]!\n"
-    // "str x27, [sp,#-8]!\n"
-    // "str x26, [sp,#-8]!\n"
-    // "str x25, [sp,#-8]!\n"
-    // "str x24, [sp,#-8]!\n"
-    // "str x23, [sp,#-8]!\n"
-    // "str x22, [sp,#-8]!\n"
-    // "str x21, [sp,#-8]!\n"
-    // "str x20, [sp,#-8]!\n"
+    //Save context
+    ASM(
+    //PC and LR
+    "str x30, [sp, #-16]\n" //Save LR first then we can use x30 to get the pc
+    "adr x30, .ret    \n"   //Get PC
+    "str x30, [sp, #-8]\n"   //Save PC
+    "add sp, sp, #-16\n"    //Align the stack with the context object
+    //x30 to x0
+    "str x30, [sp,#-8]!\n"
+    "str x29, [sp,#-8]!\n"
+    "str x28, [sp,#-8]!\n"
+    "str x27, [sp,#-8]!\n"
+    "str x26, [sp,#-8]!\n"
+    "str x25, [sp,#-8]!\n"
+    "str x24, [sp,#-8]!\n"
+    "str x23, [sp,#-8]!\n"
+    "str x22, [sp,#-8]!\n"
+    "str x21, [sp,#-8]!\n"
+    "str x20, [sp,#-8]!\n"
 
-    // "str x19, [sp,#-8]!\n"
-    // "str x18, [sp,#-8]!\n"
-    // "str x17, [sp,#-8]!\n"
-    // "str x16, [sp,#-8]!\n"
-    // "str x15, [sp,#-8]!\n"
-    // "str x14, [sp,#-8]!\n"
-    // "str x13, [sp,#-8]!\n"
-    // "str x12, [sp,#-8]!\n"
-    // "str x11, [sp,#-8]!\n"
-    // "str x10, [sp,#-8]!\n"
+    "str x19, [sp,#-8]!\n"
+    "str x18, [sp,#-8]!\n"
+    "str x17, [sp,#-8]!\n"
+    "str x16, [sp,#-8]!\n"
+    "str x15, [sp,#-8]!\n"
+    "str x14, [sp,#-8]!\n"
+    "str x13, [sp,#-8]!\n"
+    "str x12, [sp,#-8]!\n"
+    "str x11, [sp,#-8]!\n"
+    "str x10, [sp,#-8]!\n"
 
-    // "str x9, [sp,#-8]!\n"
-    // "str x8, [sp,#-8]!\n"
-    // "str x7, [sp,#-8]!\n"
-    // "str x6, [sp,#-8]!\n"
-    // "str x5, [sp,#-8]!\n"
-    // "str x4, [sp,#-8]!\n"
-    // "str x3, [sp,#-8]!\n"
-    // "str x2, [sp,#-8]!\n"
-    // "str x1, [sp,#-8]!\n"
-    // "str x0, [sp,#-8]!\n"
-    // );
-    // state_2_x20();
-    // ASM(
-    // "str x20, [sp,#-8]!\n" //Flags
-    // "add sp, sp, #-16\n" //ulr and usp
-    // "mov x1, sp\n"
-    // "str x1, [x0]\n" // update Context * volatile * o
-    // );
+    "str x9, [sp,#-8]!\n"
+    "str x8, [sp,#-8]!\n"
+    "str x7, [sp,#-8]!\n"
+    "str x6, [sp,#-8]!\n"
+    "str x5, [sp,#-8]!\n"
+    "str x4, [sp,#-8]!\n"
+    "str x3, [sp,#-8]!\n"
+    "str x2, [sp,#-8]!\n"
+    "str x1, [sp,#-8]!\n"
+    "str x0, [sp,#-8]!\n"
+    );
+    state_2_x20();
+    ASM(
+    "str x20, [sp,#-8]!\n" //Flags
+    "add sp, sp, #-16\n" //ulr and usp
+    "mov x20, sp\n"
+    "str x20, [x0]\n" // update Context * volatile * o
+    );
 
     ASM("mov sp, x1     \n"
         "isb            \n"); // serialize the pipeline so that SP gets updated before the pop
