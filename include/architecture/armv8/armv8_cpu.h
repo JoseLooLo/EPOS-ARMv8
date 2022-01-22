@@ -119,33 +119,7 @@ public:
 
     template <typename T>
     static T cas(volatile T & value, T compare, T replacement) {
-        return value;
-        // register T old;
-        // if(sizeof(T) == sizeof(Reg8))
-        //     ASM("1: ldrexb  %0, [%1]        \n"
-        //         "   cmp     %0, %2          \n"
-        //         "   bne     2f              \n"
-        //         "   strexb  r3, %3, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n"
-        //         "2:                         \n" : "=&r"(old) : "r"(&value), "r"(compare), "r"(replacement) : "r3", "cc");
-        // else if(sizeof(T) == sizeof(Reg16))
-        //     ASM("1: ldrexh  %0, [%1]        \n"
-        //         "   cmp     %0, %2          \n"
-        //         "   bne     2f              \n"
-        //         "   strexh  r3, %3, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n"
-        //         "2:                         \n" : "=&r"(old) : "r"(&value), "r"(compare), "r"(replacement) : "r3", "cc");
-        // else
-        //     ASM("1: ldrex   %0, [%1]        \n"
-        //         "   cmp     %0, %2          \n"
-        //         "   bne     2f              \n"
-        //         "   strex   r3, %3, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n"
-        //         "2:                         \n" : "=&r"(old) : "r"(&value), "r"(compare), "r"(replacement) : "r3", "cc");
-        // return old;
+        return !__sync_bool_compare_and_swap(&value, compare, replacement);
     }
 
     // ARMv8 specifics
