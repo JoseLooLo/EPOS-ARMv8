@@ -102,60 +102,19 @@ public:
 
     template<typename T>
     static T tsl(volatile T & lock) {
-        __sync_bool_compare_and_swap(&lock, 0, 1);
-        return !lock;
+        return !__sync_bool_compare_and_swap(&lock, 0, 1);
     }
 
     template<typename T>
     static T finc(volatile T & value) {
         __sync_bool_compare_and_swap(&value, value, value+1);
-        return value;
-        // register T old;
-        // if(sizeof(T) == sizeof(Reg8))
-        //     ASM("1: ldrexb  %0, [%1]        \n"
-        //         "   add     %0, #1          \n"
-        //         "   strexb  r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // else if(sizeof(T) == sizeof(Reg16))
-        //     ASM("1: ldrexh  %0, [%1]        \n"
-        //         "   add     %0, #1          \n"
-        //         "   strexh  r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // else
-        //     ASM("1: ldrex   %0, [%1]        \n"
-        //         "   add     %0, #1          \n"
-        //         "   strex   r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // return old - 1;
+        return value-1;
     }
 
     template<typename T>
     static T fdec(volatile T & value) {
         __sync_bool_compare_and_swap(&value, value, value-1);
-        return value;
-        // register T old;
-        // if(sizeof(T) == sizeof(Reg8))
-        //     ASM("1: ldrexb  %0, [%1]        \n"
-        //         "   sub     %0, #1          \n"
-        //         "   strexb  r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // else if(sizeof(T) == sizeof(Reg16))
-        //     ASM("1: ldrexh  %0, [%1]        \n"
-        //         "   sub     %0, #1          \n"
-        //         "   strexh  r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // else
-        //     ASM("1: ldrex   %0, [%1]        \n"
-        //         "   sub     %0, #1          \n"
-        //         "   strex   r3, %0, [%1]    \n"
-        //         "   cmp     r3, #0          \n"
-        //         "   bne     1b              \n" : "=&r"(old) : "r"(&value) : "r3", "cc");
-        // return old + 1;
+        return value +1;
     }
 
     template <typename T>
@@ -235,10 +194,10 @@ public:
         MODE_USR        = 0x00,
         MODE_FIQ        = 0x11, //TODO
         MODE_IRQ        = 0x12, //TODO
-        MODE_SVC        = 0x04,
+        MODE_SVC        = 0x05,
         MODE_ABORT      = 0x17, //TODO
         MODE_UNDEFINED  = 0x1b, //TODO
-        MODE_SYS        = 0x04,
+        MODE_SYS        = 0x05,
     };
 
     // Exceptions
@@ -653,7 +612,7 @@ private:
     template<typename Head, typename ... Tail>
     static void init_stack_helper(Log_Addr sp, Head head, Tail ... tail) {
         *static_cast<Head *>(sp) = head;
-        init_stack_helper(sp + sizeof(Head), tail ...);
+        init_stack_helper(sp + sizeof(long), tail ...);
     }
     static void init_stack_helper(Log_Addr sp) {}
 

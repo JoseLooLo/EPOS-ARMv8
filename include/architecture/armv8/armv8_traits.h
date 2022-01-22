@@ -43,7 +43,7 @@ template<> struct Traits<TSC>: public Traits<Build>
 
 template<> struct Traits<PMU>: public Traits<Build>
 {
-    static const bool enabled = (Traits<Build>::MODEL == Traits<Build>::Raspberry_Pi3);
+    static const bool enabled = false;
 };
 
 __END_SYS

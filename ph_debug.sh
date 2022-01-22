@@ -7,22 +7,25 @@ konsole -e aarch64-elf-gdb -ex "target remote:1236" -ex "set confirm off" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/setup_raspberry_pi3" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/system_raspberry_pi3" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/init_raspberry_pi3" \
--ex "b main()" \
--ex "b load()" \
--ex "b lock()" \
--ex "b switch_context(EPOS::S::CPU::Context**, EPOS::S::CPU::Context*) " \
--ex "b *0xa0023310" \
 -ex "b *0x80080" \
--ex "b *0x80100" \
 -ex "b *0x80180" \
 -ex "b *0x80200" \
 -ex "b *0x80280" \
--ex "b *0x80300" \
 -ex "b *0x80380" \
 -ex "b *0x80400" \
+-ex "b switch_context(EPOS::S::CPU::Context**, EPOS::S::CPU::Context*)" \
 -ex "c" \
 -ex "layout split"'
 
+# -ex "b main()" \
+# -ex "b load()" \
+# -ex "b philosopher" \
+# -ex "b Alarm::Alarm(EPOS::S::Microsecond const&, EPOS::S::U::Handler*, unsigned
+# int)" \
+# -ex "b Alarm::handler(unsigned int)" \
+# -ex "b *0x80300" \
+# -ex "b *0x80100" \
 
+# -ex "b *0xa0023310" \
 #-ex "b *0x0080000" \
 #EPOS::S::Setup::Setup
