@@ -85,8 +85,8 @@ public:
         };
 
         enum {
-            PT_MASK = ((PAGE_SIZE - 1)),
-            PD_MASK = ((PAGE_SIZE - 1)),
+            PT_MASK = ((PAGE_SIZE - 1) | 0xFFFF000000000000),
+            PD_MASK = ((PAGE_SIZE - 1) | 0xFFFF000000000000),
         };
 
     public:
