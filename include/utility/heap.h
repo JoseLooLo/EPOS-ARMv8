@@ -46,7 +46,7 @@ public:
         if(bytes < sizeof(Element))
             bytes = sizeof(Element);
 
-        Element * e = search_decrementing(bytes);
+        Element * e = search_decrementing_worst_fit(bytes);
         if(!e) {
             out_of_memory();
             return 0;

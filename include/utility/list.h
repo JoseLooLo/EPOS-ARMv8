@@ -1355,6 +1355,22 @@ public:
         return e;
     }
 
+    Element * search_size_worst_fit(unsigned int s) {
+        Element * e = head();
+        Element * bigger = e;
+        db<Lists>(WRN) << "Grouping_List::search_size_worst_fit heap available elements:"<< endl;
+        for(; e; e = e->next()) {
+            db<Lists>(WRN) << "Element[" << e << "] -> size("<< e->size() << ")" << endl;
+            if(sizeof(Object_Type) < sizeof(Element)) {
+                if (e->size() >= sizeof(Element) / sizeof(Object_Type) + s)
+                    if (e->size() > bigger->size()) bigger = e;
+            } else if (e->size() > bigger->size()) bigger = e;
+        }
+        db<Lists>(WRN) << "Grouping_List::search_size_worst_fit selected element[" << bigger << "] -> size("<< bigger->size() << ")" << endl;
+        return bigger;
+    }
+
+
     void insert_merging(Element * e, Element ** m1, Element ** m2) {
         db<Lists>(TRC) << "Grouping_List::insert_merging(e=" << e << ")" << endl;
 
@@ -1382,6 +1398,22 @@ public:
         print_tail();
 
         Element * e = search_size(s);
+        if(e) {
+            e->shrink(s);
+            _grouped_size -= s;
+            if(!e->size())
+                remove(e);
+        }
+
+        return e;
+    }
+
+    Element * search_decrementing_worst_fit(unsigned int s) {
+        db<Lists>(WRN) << "Grouping_List::search_decrementing_worst_fit(s=" << s << ")" << endl;
+        print_head();
+        print_tail();
+
+        Element * e = search_size_worst_fit(s);
         if(e) {
             e->shrink(s);
             _grouped_size -= s;
