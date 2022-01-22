@@ -30,8 +30,8 @@ public:
         return (i > segments()) ? 0 : seg(i)->p_align ? seg(i)->p_vaddr: (seg(i)->p_vaddr & ~(seg(i)->p_align - 1));
     }
 
-    int segment_size(int i) {
-        return (i > segments()) ? -1 : (int)(((seg(i)->p_offset % seg(i)->p_align) + seg(i)->p_memsz + seg(i)->p_align - 1) & ~(seg(i)->p_align - 1));
+    long segment_size(int i) {
+        return (i > segments()) ? -1 : (long)(((seg(i)->p_offset % seg(i)->p_align) + seg(i)->p_memsz + seg(i)->p_align - 1) & ~(seg(i)->p_align - 1));
     }
 
     int load_segment(int i, Elf64_Addr addr = 0);

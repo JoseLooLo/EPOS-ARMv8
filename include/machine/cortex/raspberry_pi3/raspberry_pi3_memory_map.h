@@ -13,7 +13,7 @@ static constexpr unsigned int no_mio(unsigned int addr) { return addr - MIO_OFFS
 
 struct Memory_Map: public Cortex_Memory_Map
 {
-    enum : unsigned int {
+    enum : unsigned long {
         // Base addresses for memory-mapped control and I/O devices
         MBOX_COM_BASE   = adjust_mio(0x3ef00000), // RAM memory for device-os communication (must be mapped as device by the MMU)
         MBOX_CTRL_BASE  = adjust_mio(0x40000000), // BCM MailBox

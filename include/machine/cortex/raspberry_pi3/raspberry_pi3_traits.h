@@ -26,31 +26,31 @@ public:
     static const unsigned int CPUS              = Traits<Build>::CPUS;
 
     // Physical Memory
-    static const unsigned int RAM_BASE          = 0x00000000;
-    static const unsigned int RAM_TOP           = 0x3eefffff;   // 1 GB - 17 M
-    static const unsigned int MIO_BASE          = 0x3ef00000;
-    static const unsigned int MIO_TOP           = 0x400000ff;   // ~17 MB
+    static const unsigned long RAM_BASE          = 0x00000000;
+    static const unsigned long RAM_TOP           = 0x3eefffff;   // 1 GB - 17 M
+    static const unsigned long MIO_BASE          = 0x3ef00000;
+    static const unsigned long MIO_TOP           = 0x400000ff;   // ~17 MB
 
     // Physical Memory at Boot
-    static const unsigned int BOOT              = NOT_USED;
-    static const unsigned int BOOT_STACK        = 0x0007fffc;   // RAM_BASE + 512KB - 4 (will be used as the stack pointer, not the base)
-    static const unsigned int IMAGE             = 0x000800000;
-    static const unsigned int RESET             = 0x000080000;
-    static const unsigned int SETUP             = library_mode ? NOT_USED : RESET;
+    static const unsigned long BOOT              = NOT_USED;
+    static const unsigned long BOOT_STACK        = 0x0007fffc;   // RAM_BASE + 512KB - 4 (will be used as the stack polonger, not the base)
+    static const unsigned long IMAGE             = 0x000800000;
+    static const unsigned long RESET             = 0x000080000;
+    static const unsigned long SETUP             = library_mode ? NOT_USED : RESET;
 
     // Logical Memory Map
-    static const unsigned int DIRECTORY_SIZE    = 0x20000000;
-    static const unsigned int VECTOR_TABLE      = 0;
-    static const unsigned int APP_LOW           = library_mode ? RESET : 0x60000000;
-    static const unsigned int APP_HIGH          = APP_LOW + DIRECTORY_SIZE;
+    static const unsigned long DIRECTORY_SIZE    = 0x20000000;
+    static const unsigned long VECTOR_TABLE      = 0;
+    static const unsigned long APP_LOW           = library_mode ? RESET : 0x60000000;
+    static const unsigned long APP_HIGH          = APP_LOW + DIRECTORY_SIZE;
 
-    static const unsigned int APP_CODE          = library_mode ? RESET : APP_LOW;
-    static const unsigned int APP_DATA          = APP_CODE + DIRECTORY_SIZE;
+    static const unsigned long APP_CODE          = library_mode ? RESET : APP_LOW;
+    static const unsigned long APP_DATA          = APP_CODE + DIRECTORY_SIZE;
 
-    static const unsigned int INIT              = library_mode ? NOT_USED : 0x20000000;
-    static const unsigned int PHY_MEM           = 0x00000000;   // 0 (max 1792 MB)
-    static const unsigned int IO                = 0x40000000;   // 2 GB - 256 MB (max 247 MB)
-    static const unsigned int SYS               = 0xA0000000;   // 4 GB - 9 MB
+    static const unsigned long INIT              = library_mode ? NOT_USED : 0x20000000;
+    static const unsigned long PHY_MEM           = 0x00000000;   // 0 (max 1792 MB)
+    static const unsigned long IO                = 0x40000000;   // 2 GB - 256 MB (max 247 MB)
+    static const unsigned long SYS               = 0xA000000000;   // 4 GB - 9 MB
 
     // Default Sizes and Quantities
     static const unsigned int STACK_SIZE        = 64 * 1024;

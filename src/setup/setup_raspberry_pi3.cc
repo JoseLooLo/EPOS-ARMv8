@@ -32,26 +32,26 @@ class Setup
 {
 private:
     // Physical memory map
-    static const unsigned int RAM_BASE          = Memory_Map::RAM_BASE;
-    static const unsigned int RAM_TOP           = Memory_Map::RAM_TOP;
-    static const unsigned int IMAGE             = Memory_Map::IMAGE;
-    static const unsigned int SETUP             = Memory_Map::SETUP;
-    static const unsigned int PAGE_TABLES       = (Memory_Map::RAM_TOP - 4 * 4096) & ~(0x3FFF); // 16KB for 4K entries of 4B each. Moreover, we need 16K aligned TTBR entry
-    static const unsigned int VECTOR_TABLE      = Traits<Build>::EXPECTED_SIMULATION_TIME ? 0x00010000 : 0x00008000;   // defined by uboot@QEMU
+    static const unsigned long RAM_BASE          = Memory_Map::RAM_BASE;
+    static const unsigned long RAM_TOP           = Memory_Map::RAM_TOP;
+    static const unsigned long IMAGE             = Memory_Map::IMAGE;
+    static const unsigned long SETUP             = Memory_Map::SETUP;
+    static const unsigned long PAGE_TABLES       = (Memory_Map::RAM_TOP - 4 * 4096) & ~(0x3FFF); // 16KB for 4K entries of 4B each. Moreover, we need 16K aligned TTBR entry
+    static const unsigned long VECTOR_TABLE      = Traits<Build>::EXPECTED_SIMULATION_TIME ? 0x00010000 : 0x00008000;   // defined by uboot@QEMU
 
     // Logical memory map
-    static const unsigned int APP_LOW           = Memory_Map::APP_LOW;
-    static const unsigned int PHY_MEM           = Memory_Map::PHY_MEM;
-    static const unsigned int IO                = Memory_Map::IO;
-    static const unsigned int SYS               = Memory_Map::SYS;
-    static const unsigned int SYS_INFO          = Memory_Map::SYS_INFO;
-    static const unsigned int SYS_PT            = Memory_Map::SYS_PT;
-    static const unsigned int SYS_PD            = Memory_Map::SYS_PD;
-    static const unsigned int SYS_CODE          = Memory_Map::SYS_CODE;
-    static const unsigned int SYS_DATA          = Memory_Map::SYS_DATA;
-    static const unsigned int SYS_STACK         = Memory_Map::SYS_STACK;
-    static const unsigned int APP_CODE          = Memory_Map::APP_CODE;
-    static const unsigned int APP_DATA          = Memory_Map::APP_DATA;
+    static const unsigned long APP_LOW           = Memory_Map::APP_LOW;
+    static const unsigned long PHY_MEM           = Memory_Map::PHY_MEM;
+    static const unsigned long IO                = Memory_Map::IO;
+    static const unsigned long SYS               = Memory_Map::SYS;
+    static const unsigned long SYS_INFO          = Memory_Map::SYS_INFO;
+    static const unsigned long SYS_PT            = Memory_Map::SYS_PT;
+    static const unsigned long SYS_PD            = Memory_Map::SYS_PD;
+    static const unsigned long SYS_CODE          = Memory_Map::SYS_CODE;
+    static const unsigned long SYS_DATA          = Memory_Map::SYS_DATA;
+    static const unsigned long SYS_STACK         = Memory_Map::SYS_STACK;
+    static const unsigned long APP_CODE          = Memory_Map::APP_CODE;
+    static const unsigned long APP_DATA          = Memory_Map::APP_DATA;
 
     // Architecture Imports
     typedef CPU::Reg Reg;
@@ -186,18 +186,18 @@ void Setup::build_lm()
     db<Setup>(TRC) << "Setup::build_lm()" << endl;
 
     // Get boot image structure
-    si->lm.has_stp = (si->bm.setup_offset != -1u);
-    si->lm.has_ini = (si->bm.init_offset != -1u);
-    si->lm.has_sys = (si->bm.system_offset != -1u);
-    si->lm.has_app = (si->bm.application_offset != -1u);
-    si->lm.has_ext = (si->bm.extras_offset != -1u);
+    si->lm.has_stp = (si->bm.setup_offset != -1ul);
+    si->lm.has_ini = (si->bm.init_offset != -1ul);
+    si->lm.has_sys = (si->bm.system_offset != -1ul);
+    si->lm.has_app = (si->bm.application_offset != -1ul);
+    si->lm.has_ext = (si->bm.extras_offset != -1ul);
 
     // Check SETUP integrity and get the size of its segments
     si->lm.stp_entry = 0;
     si->lm.stp_segments = 0;
-    si->lm.stp_code = ~0U;
+    si->lm.stp_code = ~0UL;
     si->lm.stp_code_size = 0;
-    si->lm.stp_data = ~0U;
+    si->lm.stp_data = ~0UL;
     si->lm.stp_data_size = 0;
     if(si->lm.has_stp) {
         ELF * stp_elf = reinterpret_cast<ELF *>(&bi[si->bm.setup_offset]);
@@ -224,9 +224,9 @@ void Setup::build_lm()
     // Check INIT integrity and get the size of its segments
     si->lm.ini_entry = 0;
     si->lm.ini_segments = 0;
-    si->lm.ini_code = ~0U;
+    si->lm.ini_code = ~0UL;
     si->lm.ini_code_size = 0;
-    si->lm.ini_data = ~0U;
+    si->lm.ini_data = ~0UL;
     si->lm.ini_data_size = 0;
     if(si->lm.has_ini) {
         ELF * ini_elf = reinterpret_cast<ELF *>(&bi[si->bm.init_offset]);
@@ -253,9 +253,9 @@ void Setup::build_lm()
     // Check SYSTEM integrity and get the size of its segments
     si->lm.sys_entry = 0;
     si->lm.sys_segments = 0;
-    si->lm.sys_code = ~0U;
+    si->lm.sys_code = ~0UL;
     si->lm.sys_code_size = 0;
-    si->lm.sys_data = ~0U;
+    si->lm.sys_data = ~0UL;
     si->lm.sys_data_size = 0;
     si->lm.sys_stack = SYS_STACK;
     si->lm.sys_stack_size = Traits<System>::STACK_SIZE * si->bm.n_cpus;
@@ -313,11 +313,11 @@ void Setup::build_lm()
     // Check APPLICATION integrity and get the size of its segments
     si->lm.app_entry = 0;
     si->lm.app_segments = 0;
-    si->lm.app_code = ~0U;
+    si->lm.app_code = ~0UL;
     si->lm.app_code_size = 0;
-    si->lm.app_data = ~0U;
+    si->lm.app_data = ~0UL;
     si->lm.app_data_size = 0;
-    si->lm.app_extra = ~0U;
+    si->lm.app_extra = ~0UL;
     si->lm.app_extra_size = 0;
     if(si->lm.has_app) {
         ELF * app_elf = reinterpret_cast<ELF *>(&bi[si->bm.application_offset]);
@@ -342,7 +342,7 @@ void Setup::build_lm()
                 si->lm.app_data_size += app_elf->segment_size(i);
             }
         }
-        if(si->lm.app_data == ~0U) {
+        if(si->lm.app_data == ~0UL) {
             db<Setup>(WRN) << "APP ELF image has no data segment!" << endl;
             si->lm.app_data = MMU::align_page(APP_DATA);
         }

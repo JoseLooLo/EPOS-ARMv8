@@ -8,13 +8,13 @@ konsole -e aarch64-elf-gdb -ex "target remote:1236" -ex "set confirm off" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/system_raspberry_pi3" \
 -ex "add-symbol-file /home/josef/Desktop/INE5424/img/init_raspberry_pi3" \
 -ex "b main()" \
+-ex "b build_lm()" \
 -ex "b load() const volatile" \
 -ex "b switch_context(EPOS::S::CPU::Context**, EPOS::S::CPU::Context*)" \
 -ex "c" \
 -ex "layout split"'
 
 -ex "b *0xa002339c" \
--ex "b *0x80080" \
 -ex "b *0x80100" \
 -ex "b *0x80180" \
 -ex "b *0x80200" \

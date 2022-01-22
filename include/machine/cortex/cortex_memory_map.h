@@ -11,7 +11,7 @@ struct Cortex_Memory_Map
 {
     static const unsigned int NOT_USED = Traits<Machine>::NOT_USED;
 
-    enum {
+    enum : unsigned long {
         // Physical Memory
         RAM_BASE        = Traits<Machine>::RAM_BASE,
         RAM_TOP         = Traits<Machine>::RAM_TOP,
