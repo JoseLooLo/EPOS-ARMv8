@@ -34,6 +34,7 @@ class Alarm
     friend class Alarm_Chronometer;             // for elapsed()
     friend class Periodic_Thread;               // for ticks(), times(), and elapsed()
     friend class FCFS;                          // for ticks() and elapsed()
+    friend class EDF;
 
 private:
     typedef Timer_Common::Tick Tick;
@@ -51,6 +52,8 @@ public:
     static Hertz frequency() { return _timer->frequency(); }
 
     static void delay(const Microsecond & time);
+
+    static volatile Tick & elapsed_test() { return _elapsed; }
 
 private:
     unsigned int times() const { return _times; }

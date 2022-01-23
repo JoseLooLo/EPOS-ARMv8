@@ -12,4 +12,12 @@ FCFS::FCFS(int p, Tn & ... an): Priority((p == IDLE) ? IDLE : Alarm::elapsed()) 
 // Since the definition above is only known to this unit, forcing its instantiation here so it gets emitted in scheduler.o for subsequent linking with other units is necessary.
 template FCFS::FCFS<>(int p);
 
+EDF::EDF(int i, const Microsecond &d, const Microsecond &p): Priority(Alarm::ticks(d)), _deadline(Alarm::ticks(d)), _period(p) {}
+
+void EDF::update() {
+    if ((PERIODIC <= _priority) && (APERIODIC > _priority)) {
+        _priority = Alarm::elapsed() + _deadline;
+    }
+}
+
 __END_SYS

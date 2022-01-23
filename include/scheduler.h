@@ -145,6 +145,21 @@ public:
     FCFS(int p = NORMAL, Tn & ... an);
 };
 
+class EDF: public Priority
+{
+public:
+    static const bool timed = true;
+    static const bool dynamic = true;
+    static const bool preemptive = true;
+    Microsecond _deadline;
+    Microsecond _period;
+    void update();
+public:
+    template <typename ... Tn>
+    EDF(int p = NORMAL, Tn & ... an): Priority(p) {}
+    EDF(int i, const Microsecond &d, const Microsecond &p = SAME);
+};
+
 __END_SYS
 
 #endif

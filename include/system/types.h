@@ -80,9 +80,10 @@ static const unsigned long long MAX_UNSIGNED_LONG_LONG = -1ULL;
 
 // Adjusts the basic time type to express time with a resolution of microseconds according to the system's life span,
 // forcing a compilation error through void when a counter overflow becomes possible.
-typedef IF<(Traits<System>::LIFE_SPAN * 1000000 <= MAX_UNSIGNED_LONG), unsigned long,
-           IF<(Traits<System>::LIFE_SPAN * 1000000ULL <= MAX_UNSIGNED_LONG_LONG), unsigned long long,
-              void>::Result>::Result Time_Base;
+// typedef IF<(Traits<System>::LIFE_SPAN * 1000000 <= MAX_UNSIGNED_LONG), unsigned long,
+//            IF<(Traits<System>::LIFE_SPAN * 1000000ULL <= MAX_UNSIGNED_LONG_LONG), unsigned long long,
+//               void>::Result>::Result Time_Base;
+typedef unsigned int Time_Base;
 
 
 // The time (as defined by God Chronos)
