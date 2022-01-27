@@ -1018,10 +1018,10 @@ void _setup()
 {
     #if defined(__armv8_h)
     CPU::int_disable(); // interrupts will be re-enabled at init_end
+    CPU::flush_caches();
     #else
 
     CPU::enable_fpu();
-    CPU::flush_caches();
     CPU::flush_branch_predictors();
     CPU::flush_tlb();
     CPU::actlr(CPU::actlr() | CPU::DCACHE_PREFE); // enable Dside prefetch

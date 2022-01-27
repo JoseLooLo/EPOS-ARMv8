@@ -52,6 +52,8 @@ public:
             PT_UXN      = 1l << 54,             //Unprivileged execute-never
             PT_EXN      = (PT_UXN | PT_PXN),     //execute-never
             PTE_FLAGS   = (PRESENT | VALID | PT_AF),
+            CWT = PT_SH_I, //Inner shareable is defined as write though
+            CD = PT_SH_NO,
         };
         //Page Directory entry flags
         enum {
@@ -66,10 +68,6 @@ public:
         };
 
         enum {
-            //TODO
-            //PT_RW_USR to IO and DMA??
-            //PT_SH_I or PT_SH_O??
-
             //Inner shareable, User access RW
             APP  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //Inner shareable, User access RW, Execution never (User and kernel)
@@ -96,6 +94,8 @@ public:
                                     ((f & Flags::RW)  ? PT_RW   : PT_RO) |
                                     ((f & Flags::USR) ? PT_USER  : PT_KERNEL) |
                                     ((f & Flags::EX)  ? 0    : PT_EXN) |
+                                    ((f & Flags::CWT) ? PT_SH_I    : 0) |
+                                    ((f & Flags::CD)  ? PT_SH_NO   : 0) |
                                     ((f & Flags::CT)  ? PT_CONT    : 0) |
                                     ((f & Flags::IO)  ? PT_SH_NO   : PT_SH_I) ) {}
 
@@ -179,7 +179,7 @@ public:
 
         Chunk(unsigned int bytes, Flags flags, Color color = WHITE)
         : _from(0), _to(pages(bytes)), _pts(page_tables(_to - _from)), _flags(Page_Flags(flags)), _pt(calloc(_pts, WHITE)) {
-            if(!((_flags & Page_Flags::PT_CONT))) //TODO
+            if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD)))
                 _pt->map_contiguous(_from, _to, _flags, color);
             else
                 _pt->map(_from, _to, _flags, color);
@@ -195,7 +195,7 @@ public:
 
         ~Chunk() {
             if(!(_flags & Page_Flags::IO)) {
-                if(!((_flags & Page_Flags::PT_CONT))) //TODO
+                if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD)))
                     free((*_pt)[_from], _to - _from);
                 else
                     for( ; _from < _to; _from++)
@@ -215,7 +215,7 @@ public:
         }
 
         int resize(unsigned int amount) {
-            if(!((_flags & Page_Flags::PT_CONT))) //TODO
+            if(!((_flags & Page_Flags::CWT) || (_flags & Page_Flags::CD)))
                 return 0;
 
             unsigned int pgs = pages(amount);

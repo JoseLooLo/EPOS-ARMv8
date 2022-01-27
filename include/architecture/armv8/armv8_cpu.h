@@ -234,12 +234,16 @@ public:
         TCR_TxSZ = (TCR_T0SZ | TCR_T1SZ),
 
         TCR_IRGN0_WBWA = 1ul << 8,
+        TCR_IRGN0_WTWA = 2ul << 8, //WT
         TCR_ORGN0_WBWA = 1ul << 10,
+        TCR_ORGN0_WTWA = 2ul << 10, // WT
         TCR_IRGN1_WBWA = 1ul << 24,
+        TCR_IRGN1_WTWA = 2ul << 24, //WT
         TCR_ORGN1_WBWA = 1ul << 26,
+        TCR_ORGN1_WTWA = 2ul << 26, //WT
 
-        TCR_IRGN_WBWA = (TCR_IRGN0_WBWA | TCR_IRGN1_WBWA),
-        TCR_ORGN_WBWA = (TCR_ORGN0_WBWA | TCR_ORGN1_WBWA),
+        TCR_IRGN_WBWA = (TCR_IRGN0_WTWA | TCR_IRGN1_WTWA),
+        TCR_ORGN_WBWA = (TCR_ORGN0_WTWA | TCR_ORGN1_WTWA),
         TCR_CACHE_FLAGS = (TCR_IRGN_WBWA | TCR_ORGN_WBWA),
 
         TCR_SH0_INNER = 3ul << 12,
@@ -429,6 +433,41 @@ public:
     static void flush_branch_predictors() { }
 
     static void flush_caches() {
+        ASM("MRS X0, CLIDR_EL1                                                                                              \t\n\
+             AND W3, W0, #0x07000000                         // Get 2 x Level of Coherence                                  \t\n\
+             LSR W3, W3, #23                                                                                                \t\n\
+             CBZ W3, Finished                                                                                               \t\n\
+             MOV W10, #0                                     // W10 = 2 x cache level                                       \t\n\
+             MOV W8, #1                                      // W8 = constant 0b1                                           \t\n\
+         Loop1:                                                                                                             \t\n\
+             ADD W2, W10, W10, LSR #1                        // Calculate 3 x cache level                                   \t\n\
+             LSR W1, W0, W2                                  // extract 3-bit cache type for this level                     \t\n\
+             AND W1, W1, #0x7                                                                                               \t\n\
+             CMP W1, #2                                                                                                     \t\n\
+             B.LT Skip                                       // No data or unified cache at this level                      \t\n\
+             MSR CSSELR_EL1, X10                             // Select this cache level                                     \t\n\
+             ISB                                             // Synchronize change of CSSELR                                \t\n\
+             MRS X1, CCSIDR_EL1                              // Read CCSIDR                                                 \t\n\
+             AND W2, W1, #7                                  // W2 = log2(linelen)-4                                        \t\n\
+             ADD W2, W2, #4                                  // W2 = log2(linelen)                                          \t\n\
+             UBFX W4, W1, #3, #10                            // W4 = max way number, right aligned                          \t\n\
+             CLZ W5, W4                                      // W5 = 32-log2(ways), bit position of way in DC operand       \t\n\
+             LSL W9, W4, W5                                  // W9 = max way number, aligned to position in DC operand      \t\n\
+             LSL W16, W8, W5                                 // W16 = amount to decrement way number per iteration          \t\n\
+         Loop2:                                                                                                             \t\n\
+             UBFX W7, W1, #13, #15                           // W7 = max set number, right aligned                          \t\n\
+             LSL W7, W7, W2                                  // W7 = max set number, aligned to position in DC operand      \t\n\
+             LSL W17, W8, W2                                 // W17 = amount to decrement set number per iteration          \t\n\
+         Loop3:                                                                                                             \t\n\
+             ORR W11, W10, W9                                // W11 = combine way number and cache number...                \t\n\
+             ORR W11, W11, W7                                // ... and set number for DC operand                           \t\n\
+             DC CSW, X11                                     // Do data cache clean by set and way                          \t\n\
+             SUBS W7, W7, W17                                // Decrement set number B.GE Loop3                             \t\n\
+             SUBS X9, X9, X16                                // Decrement way number B.GE Loop2                             \t\n\
+         Skip: ADD W10, W10, #2                              // Increment 2 x cache level                                   \t\n\
+             CMP W3, W10                                                                                                    \t\n\
+             DSB SY                                             // Ensure completion of previous cache maintenance operation \t\n\
+        Finished:");
     }
 
     static void enable_fpu() {
