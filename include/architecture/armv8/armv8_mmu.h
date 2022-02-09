@@ -71,9 +71,9 @@ public:
             //Inner shareable, User access RW
             APP  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //Inner shareable, User access RW, Execution never (User and kernel)
-            APPD = (PT_NG | PT_SH_I | PT_RW_USR | PT_PXN | PT_UXN | PTE_FLAGS),
+            APPD = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //Inner shareable, User access RO
-            APPC = (PT_NG | PT_SH_I | PT_RO_USR | PTE_FLAGS),
+            APPC = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //Inner shareable, Kernel access RW
             SYS  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //No shareable, Kernel access RW
@@ -170,6 +170,63 @@ public:
 
     // Page Directory
     typedef _Page_Table<PD_ENTRIES> Page_Directory;
+
+    // Page Directory
+    // class Page_Directory {
+    // public:
+    //     Page_Directory() {}
+
+    //     PD_Entry & operator[](unsigned int i) { return _entry[i]; }
+    //     Page_Directory & log() { return *static_cast<Page_Directory *>(phy2log(this)); }
+
+    //     void map(int from, int to, Page_Flags flags, Color color) {
+    //         Phy_Addr * addr = alloc(to - from, color);
+    //         if(addr)
+    //             remap(addr, from, to, flags);
+    //         else
+    //             for( ; from < to; from++) {
+    //                 Log_Addr * pde = phy2log(&_entry[from]);
+    //                 *pde = phy2pde(alloc(1, color));
+    //             }
+    //     }
+
+    //     void map_contiguous(int from, int to, Page_Flags flags, Color color) {
+    //         remap(alloc(to - from, color), from, to, flags);
+    //     }
+
+    //     void remap(Phy_Addr addr, int from, int to, Page_Flags flags) {
+    //         addr = align_page(addr);
+    //         for( ; from < to; from++) {
+    //             Log_Addr * pde = phy2log(&_entry[from]);
+    //             *pde = phy2pde(addr);
+    //             addr += sizeof(Page);
+    //         }
+    //     }
+
+    //     void unmap(int from, int to) {
+    //         for( ; from < to; from++) {
+    //             free(_entry[from]);
+    //             Log_Addr * pde = phy2log(&_entry[from]);
+    //             *pde = 0;
+    //         }
+    //     }
+
+    //     friend OStream & operator<<(OStream & os, Page_Directory & pd) {
+    //         os << "{\n";
+    //         int brk = 0;
+    //         for(unsigned int i = 0; i < PD_ENTRIES; i++)
+    //             if(pd[i]) {
+    //                 os << "[" << i << "]=" << pd[i] << "  ";
+    //                 if(!(++brk % 4))
+    //                     os << "\n";
+    //             }
+    //         os << "\n}";
+    //         return os;
+    //     }
+
+    // private:
+    //     PD_Entry _entry[PD_ENTRIES]; // the Phy_Addr in each entry passed through phy2pde()
+    // };
 
     // Chunk (for Segment)
     class Chunk
@@ -281,6 +338,7 @@ public:
         void activate() const { ARMv8_MMU::pd(_pd); }
 
         Log_Addr attach(const Chunk & chunk, unsigned int from = directory(APP_LOW)) {
+            flush_tlb();
             for(unsigned int i = from; i < directory(SYS); i++)
                 if(attach(i, chunk.pt(), chunk.pts(), chunk.flags()))
                     return i << DIRECTORY_SHIFT;
@@ -288,6 +346,7 @@ public:
         }
 
         Log_Addr attach(const Chunk & chunk, Log_Addr addr) {
+            flush_tlb();
             unsigned int from = directory(addr);
             if(attach(from, chunk.pt(), chunk.pts(), chunk.flags()))
                 return from << DIRECTORY_SHIFT;
@@ -295,6 +354,7 @@ public:
         }
 
         void detach(const Chunk & chunk) {
+            flush_tlb();
             for(unsigned int i = 0; i < PD_ENTRIES; i++) {
                 if(indexes(pte2phy((*_pd)[i])) == indexes(chunk.pt())) {
                     detach(i, chunk.pt(), chunk.pts());
@@ -305,6 +365,7 @@ public:
         }
 
         void detach(const Chunk & chunk, Log_Addr addr) {
+            flush_tlb();
             unsigned int from = directory(addr);
             if(indexes(pte2phy((*_pd)[from])) != indexes(chunk.pt())) {
                 db<MMU>(WRN) << "MMU::Directory::detach(pt=" << chunk.pt() << ",addr=" << addr << ") failed!" << endl;

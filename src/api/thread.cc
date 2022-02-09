@@ -89,6 +89,8 @@ Thread::~Thread()
     if(_joining)
         _joining->resume();
 
+    _task->remove(this);
+
     unlock();
 
     delete _stack;
@@ -343,6 +345,9 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         }
         db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
 
+        if (prev->_task != next->_task) {
+            next->_task->activate_context();
+        }
         // The non-volatile pointer to volatile pointer to a non-volatile context is correct
         // and necessary because of context switches, but here, we are locked() and
         // passing the volatile to switch_constext forces it to push prev onto the stack,

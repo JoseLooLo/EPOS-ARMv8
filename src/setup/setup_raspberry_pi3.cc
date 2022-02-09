@@ -951,9 +951,13 @@ void _reset()
 {
     #if defined(__armv8_h)
     if (CPU::el() == CPU::EL2) {
+        CPU::sp(Traits<Machine>::BOOT_STACK + Traits<Machine>::STACK_SIZE * 2);
+        CPU::vbar_el2(reinterpret_cast<CPU::Reg>(&_vector_table));
         //TODO: set sp_el1
         ASM("mov x0, #(1 << 31) \n"
             "orr x0, x0, #(1 << 1) \n"
+            "orr x0, x0, #(1 << 42) \n" //Flush tlb
+            "orr x0, x0, #(1 << 43) \n" //Flush tlb
             "msr hcr_el2, x0 \n"
             //Use SP_EL1 on EL1
             "mov x2, #0x3c5 \n"
@@ -1019,11 +1023,11 @@ void _setup()
     #if defined(__armv8_h)
     CPU::int_disable(); // interrupts will be re-enabled at init_end
     CPU::flush_caches();
+    CPU::flush_tlb();
     #else
 
     CPU::enable_fpu();
     CPU::flush_branch_predictors();
-    CPU::flush_tlb();
     CPU::actlr(CPU::actlr() | CPU::DCACHE_PREFE); // enable Dside prefetch
     #endif
     Setup setup;
@@ -1079,9 +1083,22 @@ void _vector_table() {
         //=======================//
 
         //Lower EL from Aarch64 Sync
-        "str x20, [sp, #-8]!\n"
-        "ldr x20, _vt_sync\n"
-        "br x20\n"
+        //Gambiarra temporaria possivelmente permanente
+        // "str x20, [sp, #-8]!\n"
+        // "mrs     x20, CurrentEL\n"
+        // "and     x20, x20, #12\n"
+        // "cmp     x20, #8\n" //EL2?
+        // "bne .end_le\n"
+        //IF EL2
+        "DSB ISHST\n"
+        "TLBI ALLE1\n"
+        "DSB ISH\n"
+        "ISB\n"
+        // "ldr x20, [sp], #8\n"
+        "eret\n"
+        // ".end_le:\n"
+        // "ldr x20, _vt_sync\n"
+        // "br x20\n"
         ".balign 0x80 \n"
         //Lower EL from Aarch64 IRQ
         "str x20, [sp, #-8]!\n"

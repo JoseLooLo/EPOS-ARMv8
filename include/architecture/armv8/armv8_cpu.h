@@ -138,6 +138,10 @@ public:
     static void vbar_el1(Reg r) {
         ASM("msr vbar_el1, %0" : : "r"(r) : );
     }
+
+    static void vbar_el2(Reg r) {
+        ASM("msr vbar_el2, %0" : : "r"(r) : );
+    }
     static Reg vbar_el1() { Reg r; ASM("mrs %0, vbar_el1" : "=r"(r)); return r; }
 };
 
@@ -427,7 +431,8 @@ public:
     static Reg pd() { return ttbr0(); }
     static void pd(Reg r) {  ttbr0(r); }
 
-    static void flush_tlb() {  } // TLBIALL - invalidate entire unifed TLB
+    //Temporario talvez
+    static void flush_tlb() { ASM("HVC #0x18");/**ASM("DSB ISHST"); ASM("TLBI ALLE1"); ASM("DSB ISH"); ASM("ISB");**/ }
     static void flush_tlb(Reg r) { }
 
     static void flush_branch_predictors() { }
