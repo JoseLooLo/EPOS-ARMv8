@@ -1083,22 +1083,22 @@ void _vector_table() {
         //=======================//
 
         //Lower EL from Aarch64 Sync
-        //Gambiarra temporaria possivelmente permanente
-        // "str x20, [sp, #-8]!\n"
-        // "mrs     x20, CurrentEL\n"
-        // "and     x20, x20, #12\n"
-        // "cmp     x20, #8\n" //EL2?
-        // "bne .end_le\n"
+        //Código temporario porém possivelmente permanente
+        "str x20, [sp, #-8]!\n"
+        "mrs     x20, CurrentEL\n"
+        "and     x20, x20, #12\n"
+        "cmp     x20, #8\n" //EL2?
+        "bne .end_le\n"
         //IF EL2
         "DSB ISHST\n"
         "TLBI ALLE1\n"
         "DSB ISH\n"
         "ISB\n"
-        // "ldr x20, [sp], #8\n"
+        "ldr x20, [sp], #8\n"
         "eret\n"
-        // ".end_le:\n"
-        // "ldr x20, _vt_sync\n"
-        // "br x20\n"
+        ".end_le:\n"
+        "ldr x20, _vt_sync\n"
+        "br x20\n"
         ".balign 0x80 \n"
         //Lower EL from Aarch64 IRQ
         "str x20, [sp, #-8]!\n"

@@ -11,7 +11,6 @@ using namespace EPOS;
 int print_inf();
 
 OStream cout;
-Mutex p;
 
 int main()
 {
@@ -20,22 +19,19 @@ int main()
     if (Task::self()->id() == 0) {
         fork(&main);
         fork(&main);
-        cout << "Hello World! I'm Task: "<< Task::self()->id() << endl;
-        //Delay(1000000);
+        cout << "Task: "<< Task::self()->id() << endl;
     }
     if (Task::self()->id() == 1) {
-        Alarm::delay(10000000);
-        cout << "Konnichiwa I'm Task: "<< Task::self()->id() << endl;
+        Alarm::delay(1000000);
+        cout << "Task: "<< Task::self()->id() << endl;
     }
     if (Task::self()->id() == 2) {
-        Alarm::delay(5000000);
-        cout << "Annyeong haseyo I'm Task: "<< Task::self()->id() << endl;
+        Alarm::delay(500000);
+        cout << "Task: "<< Task::self()->id() << endl;
     }
 
-    p.lock();
     print_inf();
-    p.unlock();
-    cout << "Sayonara, bye! o/" << endl;
+    cout << "=====End Task "<< Task::self()->id()<<"=====" << endl;
     return 0;
 }
 
