@@ -4,7 +4,7 @@
 using namespace EPOS;
 
 OStream cout;
-Semaphore k(1);
+Semaphore k(0);
 int teste2;
 
 int teste() {
@@ -19,7 +19,6 @@ int teste() {
 int main()
 {
     Thread * cons = new Thread(&teste);
-    k.p();
     k.p();
     Alarm::delay(1000000);
     cout << "Hello world!" << endl;

@@ -29,9 +29,10 @@ protected:
 
     static const bool multitask = Traits<System>::multitask;
 
-
     static const unsigned int QUANTUM = Traits<Thread>::QUANTUM;
-    static const unsigned int STACK_SIZE = Traits<Application>::STACK_SIZE;
+    // static const unsigned int STACK_SIZE = Traits<Application>::STACK_SIZE;
+    static const unsigned int STACK_SIZE = multitask ? Traits<System>::STACK_SIZE : Traits<Application>::STACK_SIZE;
+    static const unsigned int USER_STACK_SIZE = Traits<Application>::STACK_SIZE;
 
     typedef CPU::Log_Addr Log_Addr;
     typedef CPU::Context Context;
@@ -126,6 +127,7 @@ protected:
     char * _stack;
     Context * volatile _context;
     volatile State _state;
+    Segment  * _userstack;
     Queue * _waiting;
     Thread * volatile _joining;
     Queue::Element _link;
@@ -159,7 +161,20 @@ protected:
         _main = new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::MAIN, Traits<Application>::STACK_SIZE, this), entry, an ...);
     }
 
+
 public:
+    template<typename ... Tn>
+    Task(Segment * cs, Segment * ds, int (* entry)(Tn ...), Tn ... an)
+    : _as (new (SYSTEM) Address_Space), _cs(cs), _ds(ds), _entry(entry), _code(_as->attach(_cs)), _data(_as->attach(_ds)) {
+        db<Task>(TRC) << "Task(as=" << _as << ",cs=" << _cs << ",ds=" << _ds << ",entry=" << _entry << ",code=" << _code << ",data=" << _data << ") => " << this << endl;
+        lock();
+        _id = _task_count++;
+        unlock();
+        _current = this;
+        activate();
+        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::MAIN, Traits<Application>::STACK_SIZE, this), entry, an ...);
+    }
+
     template<typename ... Tn>
     Task(Segment * cs, Segment * ds, int (* entry)(Tn ...), const Log_Addr & code, const Log_Addr & data, Tn ... an)
     : _as (new (SYSTEM) Address_Space), _cs(cs), _ds(ds), _entry(entry), _code(_as->attach(_cs, code)), _data(_as->attach(_ds, data)) {
@@ -184,7 +199,7 @@ public:
     static Task * volatile self() { return current(); }
     Log_Addr entry() { return _entry; }
 
-    unsigned int id() {return _id;}
+    unsigned int task_id() {return _id;}
 
     void activate_context() {
         activate();
@@ -268,7 +283,14 @@ inline Thread::Thread(const Configuration & conf, int (* entry)(Tn ...), Tn ... 
 :_task(conf.task ? conf.task : Task::self()), _state(conf.state), _waiting(0), _joining(0), _link(this, conf.criterion)
 {
     constructor_prologue(conf.stack_size);
-    _context = CPU::init_stack(0, _stack + conf.stack_size, &__exit, entry, an ...);
+    if ((multitask && !conf.stack_size) || conf.criterion == Thread::IDLE) {
+        _context = CPU::init_stack(0, _stack + conf.stack_size, &__exit, entry, an ...);
+    }
+    else {
+        _userstack = new (SYSTEM) Segment(conf.stack_size, Segment::Flags::APP);
+        Log_Addr usp = _task->address_space()->attach(_userstack);
+        _context = CPU::init_stack(usp + conf.stack_size, _stack + conf.stack_size, &__exit, entry, an ...);
+    }
     constructor_epilogue(entry, conf.stack_size);
 
    if (conf.criterion != Thread::IDLE) {

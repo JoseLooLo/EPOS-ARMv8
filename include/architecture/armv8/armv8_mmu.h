@@ -69,11 +69,11 @@ public:
 
         enum {
             //Inner shareable, User access RW
-            APP  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
+            APP  = (PT_NG | PT_SH_I | PT_RW_USR | PTE_FLAGS),
             //Inner shareable, User access RW, Execution never (User and kernel)
-            APPD = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
+            APPD = (PT_NG | PT_SH_I | PT_RW_USR | PTE_FLAGS),
             //Inner shareable, User access RO
-            APPC = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
+            APPC = (PT_NG | PT_SH_I | PT_RW_USR | PTE_FLAGS),
             //Inner shareable, Kernel access RW
             SYS  = (PT_NG | PT_SH_I | PT_RW_KER | PTE_FLAGS),
             //No shareable, Kernel access RW
@@ -90,7 +90,7 @@ public:
     public:
         Page_Flags() {}
         Page_Flags(unsigned long f) : _flags(f) {}
-        Page_Flags(Flags f) : _flags(PT_NG |
+        Page_Flags(Flags f) : _flags(PT_NG | PTE_FLAGS |
                                     ((f & Flags::RW)  ? PT_RW   : PT_RO) |
                                     ((f & Flags::USR) ? PT_USER  : PT_KERNEL) |
                                     ((f & Flags::EX)  ? 0    : PT_EXN) |

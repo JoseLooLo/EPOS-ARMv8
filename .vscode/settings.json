@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "functional": "cpp",
+        "system_error": "cpp",
+        "utility": "cpp",
+        "atomic": "cpp",
+        "memory_resource": "cpp",
+        "array": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "fstream": "cpp",
+        "istream": "cpp",
+        "sstream": "cpp",
+        "type_traits": "cpp",
+        "tuple": "cpp"
+    }
+}

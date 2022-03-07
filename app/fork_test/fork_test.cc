@@ -4,7 +4,7 @@
 #include <process.h>
 #include <machine.h>
 #include <synchronizer.h>
-#include <utility/fork.h>
+// #include <utility/fork.h>
 
 using namespace EPOS;
 
@@ -14,24 +14,24 @@ OStream cout;
 
 int main()
 {
-    cout << "=====Test Task Fork "<< Task::self()->id()<<"=====" << endl;
+    cout << "=====Test Task Fork "<< Task::self()<<"=====" << endl;
 
-    if (Task::self()->id() == 0) {
+    if (Task::self()) {
         fork(&main);
         fork(&main);
-        cout << "Task: "<< Task::self()->id() << endl;
+        cout << "Task: "<< Task::self() << endl;
     }
-    if (Task::self()->id() == 1) {
+    if (Task::self()) {
         Alarm::delay(1000000);
-        cout << "Task: "<< Task::self()->id() << endl;
+        cout << "Task: "<< Task::self() << endl;
     }
-    if (Task::self()->id() == 2) {
+    if (Task::self()) {
         Alarm::delay(500000);
-        cout << "Task: "<< Task::self()->id() << endl;
+        cout << "Task: "<< Task::self() << endl;
     }
 
     print_inf();
-    cout << "=====End Task "<< Task::self()->id()<<"=====" << endl;
+    cout << "=====End Task "<< Task::self()<<"=====" << endl;
     return 0;
 }
 

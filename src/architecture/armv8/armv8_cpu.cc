@@ -73,7 +73,10 @@ void CPU::Context::load() const volatile
     ASM("mov sp, %0     \n"
         "isb            \n" : : "r"(this));
 
-    ASM("add sp, sp, #16    \n");       // skip usp, ulr
+    ASM("ldr x20, [sp], #8");
+    ASM("msr sp_el0, x20 \n"
+        "isb            \n");
+    ASM("add sp, sp, #8    \n");       // skip usp, ulr
 
     //Load flags
     ASM("ldr x20, [sp], #8\n");
@@ -156,7 +159,9 @@ void CPU::switch_context(Context ** o, Context * n)
     state_2_x20();
     ASM(
     "str x20, [sp,#-8]!\n" //Flags
-    "add sp, sp, #-16\n" //ulr and usp
+    "add sp, sp, #-8\n" //ulr
+    "mrs x20, sp_el0 \n"
+    "str x20, [sp,#-8]!\n"
     "mov x20, sp\n"
     "str x20, [x0]\n" // update Context * volatile * o
     );
@@ -164,7 +169,10 @@ void CPU::switch_context(Context ** o, Context * n)
     ASM("mov sp, x1     \n"
         "isb            \n"); // serialize the pipeline so that SP gets updated before the pop
 
-    ASM("add sp, sp, #16    \n");       // skip usp, ulr
+    ASM("ldr x20, [sp], #8");
+    ASM("msr sp_el0, x20 \n"
+        "isb            \n");
+    ASM("add sp, sp, #8    \n");       // skip ulr
 
     //Load flags
     ASM("ldr x20, [sp], #8\n");
